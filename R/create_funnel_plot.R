@@ -93,6 +93,16 @@ over_dispersion.pfunnel <- function(pfunnel,w=NULL) {
   }
   nn <- length(zz)
 
+  # chi-square test for over-dispersion
+  inflation_factor2 <- chi <- (1/nn)*sum(zz^2)
+  prob <- 2*pchisq(chi,1,lower.tail = FALSE)
+
+
+  # method of moments RE approach
+  pp <- pfunnel$grouped$prop_obs
+  ww <- 1/(pp*(1 - pp)*(1/nn))
+  tau2 <- (nn*chi - (nn - 1)) / (sum(ww) - (sum(ww^2)/sum(ww)))
+
   # winsorisation
   if(!is.null(w)) {
     stopifnot(w < 1 & w >= 0)
@@ -101,25 +111,39 @@ over_dispersion.pfunnel <- function(pfunnel,w=NULL) {
     lower <- floor(nn*(w))
     zz[zz > zz[upper]] <- zz[upper]
     zz[zz < zz[lower]] <- zz[lower]
+    inflation_factor2 <- (1/nn)*sum(zz^2)
   }
 
-  # chi-square naive
-  chi <- (1/nn)*sum(zz^2)
-  prob <- 2*pchisq(chi,1,lower.tail = FALSE)
-
   # return
-  c(stat = chi, pval = prob, inflation_factor = sqrt(chi))
+  c(stat = chi, pval = prob, inflation_factor = sqrt(inflation_factor2))
 }
+
+#' Casemix adjustment
+#'
+#'
+eval_indirect_adj <- function(outcome,casemix_adj) {
+
+
+}
+
 
 #' Create the funnel plot
 #'
+#' @param mult_adj multiple testing adjustment
 #'
-funnel <- function(outcome,group,limits=0.05,normal_approx=FALSE,casemix_adj=NULL,
-                   w=NULL,target=NULL,ctrl_over_disp=TRUE) {
+#' CHANGE normal_approx TO METHOD = "exact", "normal" AND SO ON!
+#'
+funnel <- function(outcome,group,limits=0.05,method="exact",casemix_adj=NULL,
+                   w=NULL,target=NULL,ctrl_over_disp="none",mult_adj="none") {
   # checks
   stopifnot(is.factor(group))
+  stopifnot(length(unique(group)) != length(group))
   stopifnot(is.numeric(outcome))
   stopifnot(is.data.frame(casemix_adj)|is.null(casemix_adj)|is.matrix(casemix_adj))
+  stopifnot(all(limits < 1))
+  stopifnot(all(limits > 0))
+  stopifnot(method %in% c("exact","normal"))
+  stopifnot(ctrl_over_disp %in% c("none","multiplicative","additive"))
 
   ## casemix adjustment
   if(!is.null(casemix_adj)) {
@@ -136,6 +160,7 @@ funnel <- function(outcome,group,limits=0.05,normal_approx=FALSE,casemix_adj=NUL
     pfunnel <- grouped_proportion(outcome,group,expected,target)
   } else {
     pfunnel <- grouped_proportion(outcome,group,target=target)
+    adj_mod <- NULL
   }
 
   # calculate proportions
@@ -150,55 +175,97 @@ funnel <- function(outcome,group,limits=0.05,normal_approx=FALSE,casemix_adj=NUL
     inflation_factor <- 1
   }
 
-  if(normal_approx == TRUE) {
-    # distribution quantiles
-    zz_lower <- qnorm(limits/2)
-    zz_upper <- qnorm(1-(limits/2))
-    # control limits
-    upper <- target + zz_upper*inflation_factor*sqrt(grouped$var)
-    lower <- target + zz_lower*inflation_factor*sqrt(grouped$var)
-  } else {
-    # continuity adjusted control limits
-    upper <- cont_adjust_bin(1-(limits/2),pfunnel$grouped$n,target)
-    lower <- cont_adjust_bin((limits/2),grouped$n,target)
-    # over-dispersion adjustment
-    upper <- pfunnel$target + inflation_factor*(upper - pfunnel$target)
-    lower <- pfunnel$target + inflation_factor*(lower - pfunnel$target)
+  # limits
+  upper <- vector(mode = "list",length = length(limits))
+  lower <- vector(mode = "list",length = length(limits))
+
+  for(ii in 1:length(limits)) {
+    if(method == "normal") {
+      # distribution quantiles
+      zz_lower <- qnorm(limits[ii]/2)
+      zz_upper <- qnorm(1-(limits[ii]/2))
+      # control limits
+      upper[[ii]] <- target + zz_upper*inflation_factor*sqrt(grouped$var)
+      lower[[ii]] <- target + zz_lower*inflation_factor*sqrt(grouped$var)
+    } else if(method == "exact") {
+      # continuity adjusted control limits
+      upper[[ii]] <- cont_adjust_bin(1-(limits[ii]/2),pfunnel$grouped$n,target)
+      lower[[ii]] <- cont_adjust_bin((limits[ii]/2),grouped$n,target)
+      # over-dispersion adjustment
+      upper[[ii]] <- pfunnel$target + inflation_factor*(upper[[ii]] - pfunnel$target)
+      lower[[ii]] <- pfunnel$target + inflation_factor*(lower[[ii]] - pfunnel$target)
+    }
   }
+  tmp <- as.character(100* (1-(limits)))
+  upper <- data.frame(upper)
+  names(upper) <- paste0("upper_",tmp)
+  lower <- data.frame(lower)
+  names(lower) <- paste0("lower_",tmp)
 
   # determine clinics inside/outside limits
-  incontrol <- (pfunnel$grouped$prop_obs <= upper &
-                  pfunnel$grouped$prop_obs >= lower)
+  incontrol <- vector(mode = "list",length=length(limits))
+  for(ii in 1:length(limits)){
+    incontrol[[ii]] <- (pfunnel$grouped$prop_obs <= upper[[ii]] &
+                    pfunnel$grouped$prop_obs >= lower[[ii]])
+  }
+  incontrol <- data.frame(incontrol)
+  names(incontrol) <- paste0("inside_",tmp)
 
   # output
-  grouped <- data.frame(grouped,upper=upper,lower=lower,incontrol=incontrol,
+  grouped <- data.frame(grouped,
+                        upper,
+                        lower,
+                        incontrol,
                         row.names=NULL)
-  control_limits = c(normal_approx=normal_approx, limits=limits)
+  control_limits = list(method=method, limits=limits)
 
   # add class
   out <- list(grouped = grouped, target = target,
-              over_dispersion = list(control = ctrl_over_disp, stats = od_res),
+              over_dispersion = list(control = ctrl_over_disp,
+                                     stats = od_res,
+                                     winsorisation = w),
               control_limits = control_limits,
-              winsorisation = w)
+              adj_model = adj_model)
   class(out) <- c(class(out),"pfunnel")
 
   # return
   out
 }
 
+#' printing function
+summary.pfunnel <- function(pfunnel) {
+
+  # number of institutions
+  n <- nrow(pfunnel$grouped)
+  cat("n:",n,"\n")
+
+  # number of clinics outside various limits
+  ctrl_names <- grep("inside",names(pfunnel$grouped),value=TRUE)
+  print_names <- sub("inside_","",ctrl_names)
+  for(ii in 1:length(ctrl_names)) {
+    print_val <- paste0("outside ",print_names[ii],"% control limits:")
+    out <- sum(pfunnel$grouped[ctrl_names[ii]] == FALSE)
+    out <- sum(pfunnel$grouped[ctrl_names[ii]] == FALSE)
+
+    cat(print_val,out,"\n")
+  }
+}
+
+
+
 #' helper function for plotting the funnel plots
 #'
 #'
-ctrl_limits <- function(pfunnel) UseMethod("ctrl_limits")
-ctrl_limits.pfunnel <- function(pfunnel) {
+ctrl_limits <- function(pfunnel,...) UseMethod("ctrl_limits")
+ctrl_limits.pfunnel <- function(pfunnel,length_out,...) {
 
   grouped <- pfunnel$grouped
 
   # limits
   mn <- min(pfunnel$grouped$n)
   mx <- max(pfunnel$grouped$n)
-  rng <- floor(seq(from = mn,to = mx,length.out = 500))
-  limits <- pfunnel$control_limits["limits"]
+  rng <- floor(seq(from = mn,to = mx,length.out=length_out))
+  limits <- pfunnel$control_limits$limits
 
   # inflation factor
   if(pfunnel$over_dispersion$control == TRUE) {
@@ -207,25 +274,36 @@ ctrl_limits.pfunnel <- function(pfunnel) {
     inflation_factor <- 1
   }
 
+  # limits
+  upper <- vector(mode = "list",length = length(limits))
+  lower <- vector(mode = "list",length = length(limits))
+
   # calculate control limits
-  if(pfunnel$control_limits["normal_approx"] == TRUE) {
-    # normal approximation control limits
-    # distribution quantiles
-    zz_lower <- qnorm(limits/2)
-    zz_upper <- qnorm(1-(limits/2))
-    # control limits
-    vv <- (pfunnel$target*(1-pfunnel$target))/rng
-    upper <- pfunnel$target + zz_upper*inflation_factor*sqrt(vv)
-    lower <- pfunnel$target + zz_lower*inflation_factor*sqrt(vv)
-  } else {
-    # continuity adjusted binomial control limits
-    upper <- cont_adjust_bin(1-(limits/2),rng,pfunnel$target)
-    lower <- cont_adjust_bin((limits/2),rng,pfunnel$target)
-    # inflation adjustment
-    upper <- pfunnel$target + inflation_factor*(upper - pfunnel$target)
-    lower <- pfunnel$target + inflation_factor*(lower - pfunnel$target)
+  for(ii in 1:length(limits)) {
+    if(pfunnel$control_limits["method"] == "normal") {
+      # distribution quantiles
+      zz_lower <- qnorm(limits[ii]/2)
+      zz_upper <- qnorm(1-(limits[ii]/2))
+      # control limits
+      vv <- (pfunnel$target*(1-pfunnel$target))/rng
+      upper[[ii]] <- pfunnel$target + zz_upper*inflation_factor*sqrt(vv)
+      lower[[ii]] <- pfunnel$target + zz_lower*inflation_factor*sqrt(vv)
+    } else if(pfunnel$control_limits["method"] == "exact") {
+      # continuity adjusted control limits
+      upper[[ii]] <- cont_adjust_bin(1-(limits[ii]/2),rng,pfunnel$target)
+      lower[[ii]] <- cont_adjust_bin((limits[ii]/2),rng,pfunnel$target)
+      # over-dispersion adjustment
+      upper[[ii]] <- pfunnel$target + inflation_factor*(upper[[ii]] - pfunnel$target)
+      lower[[ii]] <- pfunnel$target + inflation_factor*(lower[[ii]] - pfunnel$target)
+    }
   }
-  ctrl_limits <- data.frame(n = rng, upper = upper, lower = lower)
+  tmp <- as.character(100 * (1-(limits)))
+  upper <- data.frame(upper)
+  names(upper) <- paste0("upper_",tmp)
+  lower <- data.frame(lower)
+  names(lower) <- paste0("lower_",tmp)
+
+  ctrl_limits <- data.frame(n = rng, upper, lower)
   ctrl_limits
 }
 
@@ -234,18 +312,49 @@ ctrl_limits.pfunnel <- function(pfunnel) {
 #'
 #'
 ggplot <- ggplot2::ggplot
-ggplot.pfunnel <- function(pfunnel,...) {
+ggplot.pfunnel <- function(pfunnel,identify="all",length_out=500,...) {
 
-  # calcalate control limits for plotting
-  ctrl_limits <- ctrl_limits(pfunnel)
+  # calculate control limits for plotting
+  ctrl_limits <- ctrl_limits(pfunnel,length_out=length_out)
+
+  # long form
+  ctrl_limits <- data.table::melt(data.table::setDT(ctrl_limits),
+                                  id.vars = c("n"), variable.name = "limit")
+  ctrl_limits$limit_id <- paste0("ctrl_",sub("[a-z]*_","",ctrl_limits$limit))
+
+  if(identify[1] != "all") {
+    stopifnot(identify %in% pfunnel$grouped$group)
+    pfunnel$grouped <- pfunnel$grouped[pfunnel$grouped$group %in% identify,]
+  }
 
   # the actual plot
   ggplot2::ggplot(data=pfunnel$grouped,ggplot2::aes(x=n,y=prop_obs)) +
-    ggplot2::geom_point(ggplot2::aes(col=incontrol)) +
+    ggplot2::geom_point() +
     ggplot2::geom_hline(yintercept = pfunnel$target) +
-    ggplot2::geom_line(data=ctrl_limits,ggplot2::aes(x=n,y=lower)) +
-    ggplot2::geom_line(data=ctrl_limits,ggplot2::aes(x=n,y=upper))
+    ggplot2::geom_line(data=ctrl_limits,
+                       ggplot2::aes(x=n,y=value,group=limit,col=limit_id))
 }
+
+#' plot the funnel shape
+#'
+#'
+ggfunnel <- function(pfunnel,...) UseMethod("ggfunnel")
+ggfunnel.pfunnel <- function(pfunnel,length_out=500,...) {
+
+  # calculate control limits for plotting
+  ctrl_limits <- ctrl_limits(pfunnel,length_out=length_out)
+
+  # long form
+  ctrl_limits <- data.table::melt(data.table::setDT(ctrl_limits),
+                                  id.vars = c("n"), variable.name = "limit")
+  ctrl_limits$limit_id <- paste0(sub("[a-z]*_","",ctrl_limits$limit),"% limits")
+
+  # the actual plot
+  ggplot2::ggplot(data=ctrl_limits,ggplot2::aes(x=n,y=value,group=limit,col=limit_id)) +
+    ggplot2::geom_line() +
+    ggplot2::scale_color_discrete(guide = ggplot2::guide_legend(title = NULL))
+}
+
 
 #'
 #'
