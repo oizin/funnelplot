@@ -97,12 +97,6 @@ over_dispersion.pfunnel <- function(pfunnel,w=NULL) {
   inflation_factor2 <- chi <- (1/nn)*sum(zz^2)
   prob <- 2*pchisq(chi,1,lower.tail = FALSE)
 
-
-  # method of moments RE approach
-  pp <- pfunnel$grouped$prop_obs
-  ww <- 1/(pp*(1 - pp)*(1/nn))
-  tau2 <- (nn*chi - (nn - 1)) / (sum(ww) - (sum(ww^2)/sum(ww)))
-
   # winsorisation
   if(!is.null(w)) {
     stopifnot(w < 1 & w >= 0)
@@ -114,8 +108,14 @@ over_dispersion.pfunnel <- function(pfunnel,w=NULL) {
     inflation_factor2 <- (1/nn)*sum(zz^2)
   }
 
+  # method of moments RE approach
+  pp <- pfunnel$grouped$prop_obs
+  ww <- 1/(pp*(1 - pp)*(1/nn))
+  tau2 <- (nn*inflation_factor2 - (nn - 1)) / (sum(ww) - (sum(ww^2)/sum(ww)))
+
   # return
-  c(stat = chi, pval = prob, inflation_factor = sqrt(inflation_factor2))
+  c(stat = chi, pval = prob, inflation_factor = sqrt(inflation_factor2),
+    tau2 = tau2)
 }
 
 
@@ -223,7 +223,8 @@ eval_indirect_adj <- function(pfunnel,method="cv",folds=10) {
 #' CHANGE normal_approx TO METHOD = "exact", "normal" AND SO ON!
 #'
 funnel <- function(outcome,group,limits=0.05,method="exact",casemix_adj=NULL,
-                   w=NULL,target=NULL,ctrl_over_disp=FALSE,mult_adj="none") {
+                   w=NULL,target=NULL,ctrl_over_disp=FALSE,mult_adj="none",
+                   random_effects=FALSE) {
   # checks
   stopifnot(is.factor(group))
   stopifnot(length(unique(group)) != length(group))
@@ -274,8 +275,14 @@ funnel <- function(outcome,group,limits=0.05,method="exact",casemix_adj=NULL,
       zz_lower <- qnorm(limits[ii]/2)
       zz_upper <- qnorm(1-(limits[ii]/2))
       # control limits
-      upper[[ii]] <- target + zz_upper*inflation_factor*sqrt(grouped$var)
-      lower[[ii]] <- target + zz_lower*inflation_factor*sqrt(grouped$var)
+      if (random_effects == TRUE) {
+        tau2 <- od_res["tau2"]
+        upper[[ii]] <- target + zz_upper*sqrt(grouped$var + tau2)
+        lower[[ii]] <- target + zz_lower*sqrt(grouped$var + tau2)
+      } else {
+        upper[[ii]] <- target + zz_upper*inflation_factor*sqrt(grouped$var)
+        lower[[ii]] <- target + zz_lower*inflation_factor*sqrt(grouped$var)
+      }
     } else if(method == "exact") {
       # continuity adjusted control limits
       upper[[ii]] <- cont_adjust_bin(1-(limits[ii]/2),pfunnel$grouped$n,target)
@@ -312,7 +319,8 @@ funnel <- function(outcome,group,limits=0.05,method="exact",casemix_adj=NULL,
   out <- list(grouped = grouped, target = target,
               over_dispersion = list(control = ctrl_over_disp,
                                      stats = od_res,
-                                     winsorisation = w),
+                                     winsorisation = w,
+                                     random_effects = random_effects),
               control_limits = control_limits,
               adj_model = adj_mod,
               casemix_adj = casemix_adj,
@@ -383,9 +391,16 @@ ctrl_limits.pfunnel <- function(pfunnel,length_out,...) {
       zz_lower <- qnorm(limits[ii]/2)
       zz_upper <- qnorm(1-(limits[ii]/2))
       # control limits
-      vv <- (pfunnel$target*(1-pfunnel$target))/rng
-      upper[[ii]] <- pfunnel$target + zz_upper*inflation_factor*sqrt(vv)
-      lower[[ii]] <- pfunnel$target + zz_lower*inflation_factor*sqrt(vv)
+      if (pfunnel$over_dispersion$random_effects == TRUE) {
+        tau2 <- pfunnel$over_dispersion$stats["tau2"]
+        vv <- (pfunnel$target*(1-pfunnel$target))/rng
+        upper[[ii]] <- pfunnel$target + zz_upper*sqrt(vv + tau2)
+        lower[[ii]] <- pfunnel$target + zz_lower*sqrt(vv + tau2)
+      } else {
+        vv <- (pfunnel$target*(1-pfunnel$target))/rng
+        upper[[ii]] <- pfunnel$target + zz_upper*inflation_factor*sqrt(vv)
+        lower[[ii]] <- pfunnel$target + zz_lower*inflation_factor*sqrt(vv)
+      }
     } else if(pfunnel$control_limits["method"] == "exact") {
       # continuity adjusted control limits
       upper[[ii]] <- cont_adjust_bin(1-(limits[ii]/2),rng,pfunnel$target)

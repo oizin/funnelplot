@@ -122,10 +122,6 @@ pr <- function(prob,truth,length_out=100) {
   res
 }
 
-# ttt <- pr(predict_out,true_out)
-# plot(ttt$tpr,ttt$ppv,type="l", lty=2,col="blue")
-
-
 #' Area under the precision recall curve
 #'
 #'
@@ -139,6 +135,3 @@ auc_pr <- function(prob,truth,length_out=100) {
   }
   sum(out,na.rm=TRUE)
 }
-
-# auc_pr(predict_out,true_out)
-
