@@ -77,6 +77,8 @@ z_scores.pfunnel <- function(pfunnel,type="naive") {
 
 #' Check for over-dispersion
 #'
+#' @param pfunnel
+#' @param w
 #'
 #'
 over_dispersion <- function(pfunnel,w=NULL) UseMethod("over_dispersion")
@@ -110,7 +112,8 @@ over_dispersion.pfunnel <- function(pfunnel,w=NULL) {
 
   # method of moments RE approach
   pp <- pfunnel$grouped$prop_obs
-  ww <- 1/(pp*(1 - pp)*(1/nn))
+  vv <- pp*(1 - pp)*(1/nn)
+  ww <- 1/vv
   tau2 <- (nn*inflation_factor2 - (nn - 1)) / (sum(ww) - (sum(ww^2)/sum(ww)))
 
   # return
@@ -128,6 +131,9 @@ predict_ <- function(mod, newdata) {
   prob <- exp(linear) / (1 + exp(linear))
   as.numeric(prob)
 }
+
+
+
 
 
 
@@ -216,15 +222,33 @@ eval_indirect_adj <- function(pfunnel,method="cv",folds=10) {
 }
 
 
+#'
+#'
+#'
+#'
+#'
+pointTarget <- function(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE,
+                        w = 0, multAdj = "none") {
+  list(limits = limits, normalApprox = normalApprox, crtlOverDisp = crtlOverDisp,
+       multAdj = multAdj, w = w)
+}
+
+#'
+#'
+#'
+#'
+distTarget <- function(limits = 0.05, w = 0) {
+  list(limits = limits, w = w)
+}
+
+
 #' Create the funnel plot
 #'
 #' @param mult_adj multiple testing adjustment
 #'
 #' CHANGE normal_approx TO METHOD = "exact", "normal" AND SO ON!
 #'
-funnel <- function(outcome,group,limits=0.05,method="exact",casemix_adj=NULL,
-                   w=NULL,target=NULL,ctrl_over_disp=FALSE,mult_adj="none",
-                   random_effects=FALSE) {
+funnel <- function(y,group,x=NULL,target=pointTarget()) {
   # checks
   stopifnot(is.factor(group))
   stopifnot(length(unique(group)) != length(group))
@@ -424,8 +448,7 @@ ctrl_limits.pfunnel <- function(pfunnel,length_out,...) {
 #' plot funnel plot
 #'
 #'
-ggplot <- ggplot2::ggplot
-ggplot.pfunnel <- function(pfunnel,identify="all",length_out=500,...) {
+plot.pfunnel <- function(pfunnel,identify="all",length_out=500,...) {
 
   # calculate control limits for plotting
   ctrl_limits <- ctrl_limits(pfunnel,length_out=length_out)
