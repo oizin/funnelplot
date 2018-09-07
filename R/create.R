@@ -5,35 +5,7 @@
 
 
 
-
-#'
-#'
-#'
-#'
-z_scores <- function(pfunnel,...) UseMethod("z_scores")
-z_scores.pfunnel <- function(pfunnel,type="naive") {
-  # checks
-  stopifnot(is.list(pfunnel))
-  stopifnot(names(pfunnel) %in% c("grouped","target"))
-  stopifnot(type %in% c("naive","adjusted"))
-
-  grouped <- pfunnel$grouped
-  stopifnot(names(grouped) %in% c("group","n","observed","prop_obs","var"))
-  target <- pfunnel$target
-
-  # calculations
-  if(type == "naive") {
-    zz <- (grouped$prop_obs - target)/sqrt(grouped$var)
-  } else {
-    zz <- (grouped$prop_adj - target)/sqrt(grouped$var)
-  }
-
-  # return
-  zz
-}
-
-
-#' Check for over-dispersion
+#' Dispersion parameters
 #'
 #' @param pfunnel
 #' @param w
@@ -42,19 +14,16 @@ z_scores.pfunnel <- function(pfunnel,type="naive") {
 dispersion <- function(funnelData,trim=NULL) UseMethod("dispersion")
 dispersion.funnelData <- function(funnelData,trim=NULL) {
 
-  grouped <- pfunnel$grouped
-  target <- pfunnel$target
+  #
+  data <- funnelData$data
+  target <- funnelData$target
 
-  # z-scores
-  if(is.null(pfunnel$grouped$prop_adj)) {
-    zz <- (grouped$prop_obs - target)/sqrt(grouped$var)
-  } else {
-    zz <- (grouped$prop_adj - target)/sqrt(grouped$var)
-  }
+  # z scores
+  zz <- (data$prop_adj - target)/sqrt(data$var)
   nn <- length(zz)
 
   # chi-square test for over-dispersion
-  inflation_factor2 <- chi <- (1/nn)*sum(zz^2)
+  inflationFactorSq <- chi <- (1/nn)*sum(zz^2)
   prob <- 2*pchisq(chi,1,lower.tail = FALSE)
 
   # winsorisation
@@ -65,18 +34,18 @@ dispersion.funnelData <- function(funnelData,trim=NULL) {
     lower <- floor(nn*(trim))
     zz[zz > zz[upper]] <- zz[upper]
     zz[zz < zz[lower]] <- zz[lower]
-    inflation_factor2 <- (1/nn)*sum(zz^2)
+    inflationFactorSq <- (1/nn)*sum(zz^2)
   }
 
   # method of moments RE approach
-  pp <- pfunnel$grouped$prop_obs
+  pp <- data$prop_obs
   vv <- pp*(1 - pp)*(1/nn)
   ww <- 1/vv
-  tau2 <- (nn*inflation_factor2 - (nn - 1)) / (sum(ww) - (sum(ww^2)/sum(ww)))
+  effectVar <- (nn*inflationFactorSq - (nn - 1)) / (sum(ww) - (sum(ww^2)/sum(ww)))
 
   # return
-  c(stat = chi, pval = prob, inflation_factor = sqrt(inflation_factor2),
-    tau2 = tau2)
+  c(stat = chi, pval = prob, inflationFactor = sqrt(inflationFactorSq),
+    effectVar = effectVar)
 }
 
 
@@ -111,18 +80,15 @@ funnel <- function(formula, target=pointTarget(), data) {
   ## calculation of points for funnel
   funnelData <- groupOutcomes(observed,expected,group)
 
-  # calculate proportions
-  funnelData$target
-  funnelData$grouped
-
-  # calculate overdispersion relative to assumed distribution
-
-  odRes <- dispersion(funnelData, trim = target$trim)
+  # calculate
+  # 1. overdispersion relative to assumed distribution
+  # 2. parameters for random effects distribution
+  dispRes <- dispersion(funnelData, trim = target$trim)
 
   if (target$method == "point") {
-    # are we controlling for over-dispersion
+    # are we controlling for over-dispersion?
     if(target$crtlOverDisp == TRUE){
-      inflationFactor <- odRes["inflation_factor"]
+      inflationFactor <- dispRes["inflationFactor"]
     } else {
       inflationFactor <- 1
     }
@@ -132,7 +98,6 @@ funnel <- function(formula, target=pointTarget(), data) {
 
   } else if (target$method == "distribution") {
     inflationFactor <- odRes["effectVar"]
-
     ctrlLimits <- randomEffectLimits(funnelData,effectVar)
     lower <- ctrlLimits$lower
     upper <- ctrlLimits$upper
@@ -141,30 +106,29 @@ funnel <- function(formula, target=pointTarget(), data) {
   # determine clinics inside/outside limits
   incontrol <- vector(mode = "list",length=length(target$limits))
   for(ii in 1:length(target$limits)) {
-    incontrol[[ii]] <- (funnelData$grouped$prop_obs <= upper[[ii]] &
-                          funnelData$grouped$prop_obs >= lower[[ii]])
+    incontrol[[ii]] <- (funnelData$data$prop_obs <= upper[[ii]] &
+                          funnelData$data$prop_obs >= lower[[ii]])
   }
   incontrol <- data.frame(incontrol)
   tmp <- as.character(100* (1-(target$limits)))
-  names(incontrol) <- paste0("inside_",tmp)
+  names(incontrol) <- paste0("inside",tmp)
 
-  # output
-  grouped <- data.frame(funnelData$grouped,
+  ## output
+  results <- data.frame(funnelData$data,
                         upper,
                         lower,
                         incontrol,
                         row.names=NULL)
   control_limits = list(method=target$method, limits=target$limits)
-
   # add class
-  out <- list(grouped = grouped, target = target,
-              over_dispersion = odRes,
+  out <- list(results = results, target = target,
+              dispersion = odRes,
               control_limits = control_limits
               #adj_model = adj_mod,
               #casemix_adj = casemix_adj,
               #outcome = outcome
   )
-  class(out) <- c(class(out),"funnelRes")
+  class(out) <- c(class(out), "funnelRes")
 
   # return
   out
@@ -192,17 +156,20 @@ pointLimits <- function(funnelData,limits,inflationFactor,normalApprox) {
       lower[[ii]] <- funnelData$target + inflationFactor*(lower[[ii]] - funnelData$target)
     }
   }
-  tmp <- as.character(100* (1-(limits)))
+  limitChr <- as.character(100 * (1 - limits))
   upper <- data.frame(upper)
-  names(upper) <- paste0("upper_",tmp)
+  names(upper) <- paste0("upper", limitChr)
   lower <- data.frame(lower)
-  names(lower) <- paste0("lower_",tmp)
+  names(lower) <- paste0("lower", limitChr)
 
+  # return
   list(lower = lower, upper = upper)
-
 }
 
-
+#'
+#'
+#'
+#'
 randomEffectLimits <- function(funnelData,limits,effectVar) {
 
   # vectors to store results
@@ -234,7 +201,7 @@ randomEffectLimits <- function(funnelData,limits,effectVar) {
 #'
 groupOutcomes <- function(observed,expected,group,target=NULL) {
   # checks
-  stopifnot(is.factor(group))
+  stopifnot(is.factor(id))
   stopifnot(is.numeric(observed))
   stopifnot(is.numeric(expected)|is.null(expected))
 
@@ -244,23 +211,23 @@ groupOutcomes <- function(observed,expected,group,target=NULL) {
   }
 
   # outcome calculations by clinic
-  nn <- tapply(observed,group,length)
-  obs_grpd <- tapply(observed,group,sum)
+  nn <- tapply(observed, id, length)
+  obs_grpd <- tapply(observed, id, sum)
   prop_obs <- (obs_grpd/nn)
-  vv <- (target*(1-target))/nn
+  std_err <- sqrt((target*(1-target))/nn)
 
   # prepare output
-  adj_grpd <- tapply(expected,group,sum)
+  adj_grpd <- tapply(expected, id, sum)
   prop_adj <- (obs_grpd/adj_grpd)*target  # standardised proportion
-  grouped <- data.frame(group = levels(group), n = nn,
+  data <- data.frame(id = levels(id), n = nn,
                         observed = obs_grpd, expected = adj_grpd,
                         prop_obs = prop_obs, prop_adj = prop_adj,
-                        var = vv,row.names = NULL)
+                        std_err = std_err, row.names = NULL)
 
 
   # add class
-  out <- list(grouped = grouped, target = target)
-  class(out) <- c(class(out),"funnelData")
+  out <- list(data = data, target = target)
+  class(out) <- c(class(out), "funnelData")
 
   # return
   out
