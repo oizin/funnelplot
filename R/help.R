@@ -1,7 +1,7 @@
 #' Hello.
 #'
 #' @params formula
-#'
+#' @export
 getFunnelFormula <- function(formula) {
   vars <- all.vars(formula)
   p <- length(vars)
@@ -13,5 +13,5 @@ getFunnelFormula <- function(formula) {
   }
   list(newForm = as.formula(newForm),
        outcome = vars[1],
-       group = vars[p])
+       id = vars[p])
 }

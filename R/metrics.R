@@ -2,7 +2,7 @@
 #'
 #' @param prob
 #' @param cutoff
-#'
+#' @export
 classify <- function(prob, cutoff = 0.5) {
   pred <- rep(0, length(prob))
   pred[prob >= cutoff] <- 1
@@ -13,7 +13,7 @@ classify <- function(prob, cutoff = 0.5) {
 #'
 #' @param pred
 #' @param truth
-#'
+#' @export
 confusion <- function(pred,truth) {
   labelled <- rep("TN",length(pred))
   labelled[(pred == truth) & (truth == 1)] <- "TP"
@@ -26,7 +26,7 @@ confusion <- function(pred,truth) {
 #'
 #' @param pred
 #' @param truth
-#'
+#' @export
 accuracy <- function(pred,truth) {
   sum(pred == truth)/length(pred)
 }
@@ -35,7 +35,7 @@ accuracy <- function(pred,truth) {
 #'
 #' @param pred
 #' @param truth
-#'
+#' @export
 err <- function(pred,truth) {
   1 - accuracy(pred,truth)
 }
@@ -44,7 +44,7 @@ err <- function(pred,truth) {
 #'
 #' @param pred
 #' @param truth
-#'
+#' @export
 tpr <- function(pred,truth) {
   tp <- sum((pred == truth) & (truth == 1))
   fn <- sum((pred != truth) & (truth == 1))
@@ -55,7 +55,7 @@ tpr <- function(pred,truth) {
 #'
 #' @param pred
 #' @param truth
-#'
+#' @export
 sp <- function(pred,truth) {
   tn <- sum((pred == truth) & (truth == 0))
   fp <- sum((pred != truth) & (truth == 0))
@@ -66,7 +66,7 @@ sp <- function(pred,truth) {
 #'
 #' @param pred
 #' @param truth
-#'
+#' @export
 fpr <- function(pred,truth) {
   fp <- sum((pred != truth) & (truth == 0))
   tn <- sum((pred == truth) & (truth == 0))
@@ -77,7 +77,7 @@ fpr <- function(pred,truth) {
 #'
 #' @param pred
 #' @param truth
-#'
+#' @export
 ppv <- function(pred,truth) {
   tp <- sum((pred == truth) & (truth == 1))
   fp <- sum((pred != truth) & (truth == 0))
@@ -86,7 +86,7 @@ ppv <- function(pred,truth) {
 
 #' Receiver operating characteristic curve
 #'
-#'
+#' @export
 roc <- function(prob,truth,length_out=100) {
   cutoffs <- seq(0,1,length.out=length_out)
   res <- data.frame(cutoffs, tpr = NA, fpr = NA)
@@ -99,7 +99,7 @@ roc <- function(prob,truth,length_out=100) {
 }
 
 #' Area under the receiver operating characteristic curve
-#'
+#' @export
 auc_roc <- function(prob,truth,length_out=100) {
   roc_df <- roc(prob,truth,length_out=length_out)
   out <- numeric(length_out-1)
@@ -111,6 +111,7 @@ auc_roc <- function(prob,truth,length_out=100) {
   sum(out,na.rm=TRUE)
 }
 
+#' @export
 pr <- function(prob,truth,length_out=100) {
   cutoffs <- seq(0,1,length.out=length_out)
   res <- data.frame(cutoffs, ppv = NA, tpr = NA)
@@ -125,6 +126,7 @@ pr <- function(prob,truth,length_out=100) {
 #' Area under the precision recall curve
 #'
 #'
+#' @export
 auc_pr <- function(prob,truth,length_out=100) {
   pr_df <- pr(prob,truth,length_out=length_out)
   out <- numeric(length_out-1)

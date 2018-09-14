@@ -12,5 +12,4 @@ RoxygenNote: 6.1.0
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
-LinkingTo: Rcpp
-Imports: Rcpp
+Imports: ggplot2

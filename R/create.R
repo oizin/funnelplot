@@ -10,8 +10,10 @@
 #' @param pfunnel
 #' @param w
 #'
-#'
+#' @export
 dispersion <- function(funnelData,trim=NULL) UseMethod("dispersion")
+
+#' @export
 dispersion.funnelData <- function(funnelData,trim=NULL) {
 
   #
@@ -19,7 +21,7 @@ dispersion.funnelData <- function(funnelData,trim=NULL) {
   target <- funnelData$target
 
   # z scores
-  zz <- (data$prop_adj - target)/sqrt(data$var)
+  zz <- (data$prop_adj - target)/data$std_err
   nn <- length(zz)
 
   # chi-square test for over-dispersion
@@ -48,9 +50,6 @@ dispersion.funnelData <- function(funnelData,trim=NULL) {
     effectVar = effectVar)
 }
 
-
-
-
 #' Create the funnel plot
 #'
 #' @param formula a two-sided formula y ~ x1 + x2 | group, if no covariates use y ~ 1 | group
@@ -60,14 +59,14 @@ dispersion.funnelData <- function(funnelData,trim=NULL) {
 #' @param data a data frame containing the variables named in formula
 #'
 #' CHANGE normal_approx TO METHOD = "exact", "normal" AND SO ON!
-#'
-funnel <- function(formula, target=pointTarget(), data) {
+#' @export
+funnel <- function(formula, control=pointTarget(), data) {
   ## checks
   stopifnot(all.vars(formula) %in% c(names(data)))
 
   ## edit formula
   sepFormula <- getFunnelFormula(formula)
-  groupVar <- sepFormula$group
+  idVar <- sepFormula$id
   outcomeVar <- sepFormula$outcome
   newFormula <- sepFormula$newForm
 
@@ -75,42 +74,49 @@ funnel <- function(formula, target=pointTarget(), data) {
   adjMod <- glm(newFormula,family=binomial(link="logit"),data=data)
   expected <- fitted(adjMod)
   observed <- data[[outcomeVar]]
-  group <- data[[groupVar]]
+  id <- data[[idVar]]
 
   ## calculation of points for funnel
-  funnelData <- groupOutcomes(observed,expected,group)
+  funnelData <- groupOutcomes(observed,expected,id)
 
   # calculate
   # 1. overdispersion relative to assumed distribution
   # 2. parameters for random effects distribution
-  dispRes <- dispersion(funnelData, trim = target$trim)
+  dispRes <- dispersion(funnelData, trim = control$trim)
 
-  if (target$method == "point") {
+  if (control$method == "point") {
     # are we controlling for over-dispersion?
-    if(target$crtlOverDisp == TRUE){
+    if(control$crtlOverDisp == TRUE){
       inflationFactor <- dispRes["inflationFactor"]
     } else {
       inflationFactor <- 1
     }
-    ctrlLimits <- pointLimits(funnelData,target$limits,inflationFactor,target$normalApprox)
+    ctrlLimits <- pointLimits(target=funnelData$target,
+                              n=funnelData$data$n,
+                              N=nrow(funnelData$data),
+                              inflationFactor,
+                              control)
     lower <- ctrlLimits$lower
     upper <- ctrlLimits$upper
 
-  } else if (target$method == "distribution") {
-    inflationFactor <- odRes["effectVar"]
-    ctrlLimits <- randomEffectLimits(funnelData,effectVar)
+  } else if (control$method == "distribution") {
+    effectVar <- dispRes["effectVar"]
+    ctrlLimits <- randomEffectLimits(target=funnelData$target,
+                                     n=funnelData$data$n,
+                                     effectVar,
+                                     control)
     lower <- ctrlLimits$lower
     upper <- ctrlLimits$upper
   }
 
   # determine clinics inside/outside limits
-  incontrol <- vector(mode = "list",length=length(target$limits))
-  for(ii in 1:length(target$limits)) {
-    incontrol[[ii]] <- (funnelData$data$prop_obs <= upper[[ii]] &
-                          funnelData$data$prop_obs >= lower[[ii]])
+  incontrol <- vector(mode = "list",length=length(control$limits))
+  for(ii in 1:length(control$limits)) {
+    incontrol[[ii]] <- (funnelData$data$prop_adj <= upper[[ii]] &
+                          funnelData$data$prop_adj >= lower[[ii]])
   }
   incontrol <- data.frame(incontrol)
-  tmp <- as.character(100* (1-(target$limits)))
+  tmp <- as.character(100* (1-(control$limits)))
   names(incontrol) <- paste0("inside",tmp)
 
   ## output
@@ -119,11 +125,13 @@ funnel <- function(formula, target=pointTarget(), data) {
                         lower,
                         incontrol,
                         row.names=NULL)
-  control_limits = list(method=target$method, limits=target$limits)
+  control_limits = list(method=control$method, limits=control$limits)
   # add class
-  out <- list(results = results, target = target,
-              dispersion = odRes,
-              control_limits = control_limits
+  out <- list(results = results,
+              control = control,
+              dispersion = dispRes,
+              ctrlLimits = ctrlLimits,
+              target = funnelData$target
               #adj_model = adj_mod,
               #casemix_adj = casemix_adj,
               #outcome = outcome
@@ -134,72 +142,92 @@ funnel <- function(formula, target=pointTarget(), data) {
   out
 }
 
-pointLimits <- function(funnelData,limits,inflationFactor,normalApprox) {
-  # vectors to store results
-  upper <- vector(mode = "list",length = length(limits))
-  lower <- vector(mode = "list",length = length(limits))
-
-  for(ii in 1:length(limits)) {
-    if(normalApprox == TRUE) {
-      # distribution quantiles
-      zz_lower <- qnorm(limits[ii]/2)
-      zz_upper <- qnorm(1-(limits[ii]/2))
-      # control limits
-      upper[[ii]] <- funnelData$target + zz_upper*inflationFactor*sqrt(funnelData$grouped$var)
-      lower[[ii]] <- funnelData$target + zz_lower*inflationFactor*sqrt(funnelData$grouped$var)
-    } else if (normalApprox == FALSE) {
-      # continuity adjusted control limits
-      upper[[ii]] <- cont_adjust_bin(1-(limits[ii]/2),funnelData$grouped$n,funnelData$target)
-      lower[[ii]] <- cont_adjust_bin((limits[ii]/2),funnelData$grouped$n,funnelData$target)
-      # over-dispersion adjustment
-      upper[[ii]] <- funnelData$target + inflationFactor*(upper[[ii]] - funnelData$target)
-      lower[[ii]] <- funnelData$target + inflationFactor*(lower[[ii]] - funnelData$target)
-    }
-  }
-  limitChr <- as.character(100 * (1 - limits))
-  upper <- data.frame(upper)
-  names(upper) <- paste0("upper", limitChr)
-  lower <- data.frame(lower)
-  names(lower) <- paste0("lower", limitChr)
-
-  # return
-  list(lower = lower, upper = upper)
+#' @export
+bonferroni <- function(limits, n) {
+  new_limits <- limits/n
+  new_limits
 }
 
 #'
 #'
 #'
+#' @export
+pointLimits <- function(target,n,N,inflationFactor,control) {
+  # vectors to store results
+  upper <- vector(mode = "list",length = length(control$limits))
+  lower <- vector(mode = "list",length = length(control$limits))
+
+  # multiplicity adjustment
+  if(multAdj != "none") {
+    limits <- do.call(multAdj,args = list(limits=limits,n=N))
+  }
+
+  for(ii in 1:length(control$limits)) {
+    if(control$normalApprox == TRUE) {
+      # standard error for approximations
+      stdErr0 <- sqrt(target*(1-target)*(1/n))
+      # distribution quantiles
+      zzlower <- qnorm(control$limits[ii]/2)
+      zzupper <- qnorm(1-(control$limits[ii]/2))
+      # control limits
+      lower[[ii]] <- target + zzlower*inflationFactor*stdErr0
+      upper[[ii]] <- target + zzupper*inflationFactor*stdErr0
+    } else if (control$normalApprox == FALSE) {
+      # continuity adjusted control limits
+      upper[[ii]] <- cont_adjust_bin(1-(control$limits[ii]/2),n,target)
+      lower[[ii]] <- cont_adjust_bin((control$limits[ii]/2),n,target)
+      # over-dispersion adjustment
+      upper[[ii]] <- target + inflationFactor*(upper[[ii]] - target)
+      lower[[ii]] <- target + inflationFactor*(lower[[ii]] - target)
+    }
+  }
+  limitChr <- as.character(100 * (1 - control$limits))
+  upper <- data.frame(upper)
+  names(upper) <- paste0("upper", limitChr)
+  lower <- data.frame(lower)
+  names(lower) <- paste0("lower", limitChr)
+  # return
+  out <- list(lower = lower, upper = upper)
+  out
+}
+
+#' Calculate ...
 #'
-randomEffectLimits <- function(funnelData,limits,effectVar) {
+#' @param target ...
+#' @param n
+#' @param effectVar
+#' @param control
+#'
+#' @export
+randomEffectLimits <- function(target,n,effectVar,control) {
 
   # vectors to store results
-  upper <- vector(mode = "list",length = length(limits))
-  lower <- vector(mode = "list",length = length(limits))
+  upper <- vector(mode = "list",length = length(control$limits))
+  lower <- vector(mode = "list",length = length(control$limits))
 
-  zz_lower <- qnorm(limits[ii]/2)
-  zz_upper <- qnorm(1-(limits[ii]/2))
+  zzlower <- qnorm(control$limits[ii]/2)
+  zzupper <- qnorm(1-(control$limits[ii]/2))
 
-  upper[[ii]] <- funnelData$target + zz_upper*sqrt(funnelData$grouped$var + effectVar)
-  lower[[ii]] <- funnelData$target + zz_lower*sqrt(funnelData$grouped$var + effectVar)
+  var0 <- target*(1-target)*(1/n)
+  upper[[ii]] <- target + zzupper*sqrt(var0 + effectVar)
+  lower[[ii]] <- target + zzlower*sqrt(var0 + effectVar)
 
-  tmp <- as.character(100* (1-(limits)))
+  tmp <- as.character(100* (1-(control$limits)))
   upper <- data.frame(upper)
   names(upper) <- paste0("upper_",tmp)
   lower <- data.frame(lower)
   names(lower) <- paste0("lower_",tmp)
-
-
-  list(lower = lower, upper = upper)
-
-
+  # return
+  out <- list(lower = lower, upper = upper)
+  out
 }
 
 
 
 #' Calculate proportion of
 #'
-#'
-groupOutcomes <- function(observed,expected,group,target=NULL) {
+#' @export
+groupOutcomes <- function(observed,expected,id,target=NULL) {
   # checks
   stopifnot(is.factor(id))
   stopifnot(is.numeric(observed))
@@ -224,7 +252,6 @@ groupOutcomes <- function(observed,expected,group,target=NULL) {
                         prop_obs = prop_obs, prop_adj = prop_adj,
                         std_err = std_err, row.names = NULL)
 
-
   # add class
   out <- list(data = data, target = target)
   class(out) <- c(class(out), "funnelData")
@@ -236,25 +263,26 @@ groupOutcomes <- function(observed,expected,group,target=NULL) {
 
 #' print function
 #'
-#'
-print.pfunnel <- function(pfunnel) {
-  print(pfunnel$grouped)
+#' @export
+print.funnelRes <- function(funnelRes) {
+  print(format(funnelRes$results, digits=3))
 }
 
 #' summary function
+#' @export
 summary.pfunnel <- function(pfunnel) {
 
   # number of institutions
-  n <- nrow(pfunnel$grouped)
+  n <- nrow(pfunnel$data)
   cat("n:",n,"\n")
 
   # number of clinics outside various limits
-  ctrl_names <- grep("inside",names(pfunnel$grouped),value=TRUE)
+  ctrl_names <- grep("inside",names(pfunnel$data),value=TRUE)
   print_names <- sub("inside_","",ctrl_names)
   for(ii in 1:length(ctrl_names)) {
     print_val <- paste0("outside ",print_names[ii],"% control limits:")
-    out <- sum(pfunnel$grouped[ctrl_names[ii]] == FALSE)
-    out <- sum(pfunnel$grouped[ctrl_names[ii]] == FALSE)
+    out <- sum(pfunnel$data[ctrl_names[ii]] == FALSE)
+    out <- sum(pfunnel$data[ctrl_names[ii]] == FALSE)
 
     cat(print_val,out,"\n")
   }
@@ -264,7 +292,7 @@ summary.pfunnel <- function(pfunnel) {
 #'
 #'
 #'
-#'
+#' @export
 cont_adjust_bin <- function(limit, n, target) {
   rp <- qbinom(p = limit,size = n,prob = target)
   t1 <- pbinom(q = rp,size = n,prob = target)
@@ -273,6 +301,8 @@ cont_adjust_bin <- function(limit, n, target) {
   ctrl_limit <- (rp-aa)/n
   ctrl_limit
 }
+
+
 
 
 

@@ -1,7 +1,7 @@
 
 #'
 #'
-#'
+#' @export
 sample_nobs <- function(N,sample_func) {
   if (is.null(sample_func)) {
     n_i <- round(runif(n = N, min = n_min, max = n_max), 0)
@@ -18,7 +18,7 @@ sample_nobs <- function(N,sample_func) {
   n_i
 }
 
-
+#' @export
 sample_means <- function(N,mean,sd) {
   mean_i <- rnorm(N, mean = mean, sd = sd)
   if (any(mean_i <= 0)) {
@@ -31,6 +31,7 @@ sample_means <- function(N,mean,sd) {
 #' simulate random effects
 #'
 #'
+#' @export
 simulate <- function(N, n_min, n_max, mean, sd, sample_func = NULL) {
 
   if (pnorm(0, mean, sd) > 0.0) {
@@ -54,6 +55,7 @@ simulate <- function(N, n_min, n_max, mean, sd, sample_func = NULL) {
 }
 
 
+#' @export
 plot.fsim <- function(sim,effect="true") {
 
   # variance calculations
@@ -112,6 +114,6 @@ plot.fsim <- function(sim,effect="true") {
 
 # plot(simulate(100, 50, 1000, 0.22,  sqrt(0.007711165 )),effect="estimated")
 
-f = function(n) rnbinom(n, size = 1.1404360,mu = 775.0000000)
-plot(tt <- simulate(100, 50, 1000, 0.22,  .15, sample_func = f),effect="estimated")
+# f = function(n) rnbinom(n, size = 1.1404360,mu = 775.0000000)
+# plot(tt <- simulate(100, 50, 1000, 0.22,  .15, sample_func = f),effect="estimated")
 

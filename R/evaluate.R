@@ -1,6 +1,6 @@
 #' Casemix adjustment
 #'
-#'
+#' @export
 eval_indirect_adj <- function(pfunnel,method="cv",folds=10) {
   outcome <- pfunnel$outcome
   casemix_adj <- pfunnel$casemix_adj
@@ -87,7 +87,7 @@ eval_indirect_adj <- function(pfunnel,method="cv",folds=10) {
 #'
 #'
 #'
-#'
+#' @export
 predict_ <- function(mod, newdata) {
   linear <- newdata %*% mod$coefficients
   prob <- exp(linear) / (1 + exp(linear))

@@ -6,7 +6,7 @@
 #' @param trim the fraction (0 to 0.5) of observations to be trimmed from each end
 #' @param multAdj
 #'
-#'
+#' @export
 pointTarget <- function(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE,
                         trim = 0, multAdj = "none") {
   list(method = "point", limits = limits, normalApprox = normalApprox,
@@ -16,7 +16,7 @@ pointTarget <- function(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE
 #' Target is a distribution
 #'
 #'
-#'
+#' @export
 distTarget <- function(limits = 0.05, trim = 0) {
   list(method = "distribution", limits = limits, w = w)
 }
