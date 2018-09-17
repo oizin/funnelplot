@@ -4,7 +4,6 @@
 #########################################################################
 
 
-
 #' Dispersion parameters
 #'
 #' @param pfunnel
@@ -21,29 +20,30 @@ dispersion.funnelData <- function(funnelData,trim=NULL) {
   target <- funnelData$target
 
   # z scores
-  zz <- (data$prop_adj - target)/data$std_err
-  nn <- length(zz)
+  zz <- (data$prop_adj - target)/data$std_err0
+  N <- length(zz)
 
   # chi-square test for over-dispersion
-  inflationFactorSq <- chi <- (1/nn)*sum(zz^2)
+  inflationFactorSq <- chi <- (1/N)*sum(zz^2)
   prob <- 2*pchisq(chi,1,lower.tail = FALSE)
 
   # winsorisation
   if(!is.null(trim)) {
     stopifnot(trim < 1 & trim >= 0)
     zz <- sort(zz)
-    upper <- ceiling(nn*(1-trim))
-    lower <- floor(nn*(trim))
+    upper <- ceiling(N*(1-trim))
+    lower <- floor(N*(trim))
     zz[zz > zz[upper]] <- zz[upper]
     zz[zz < zz[lower]] <- zz[lower]
-    inflationFactorSq <- (1/nn)*sum(zz^2)
+    inflationFactorSq <- (1/N)*sum(zz^2)
   }
 
   # method of moments RE approach
+  n <- data$n
   pp <- data$prop_obs
-  vv <- pp*(1 - pp)*(1/nn)
+  vv <- pp*(1 - pp)*(1/n)
   ww <- 1/vv
-  effectVar <- (nn*inflationFactorSq - (nn - 1)) / (sum(ww) - (sum(ww^2)/sum(ww)))
+  effectVar <- (N*inflationFactorSq - (N - 1)) / (sum(ww) - (sum(ww^2)/sum(ww)))
 
   # return
   c(stat = chi, pval = prob, inflationFactor = sqrt(inflationFactorSq),
@@ -74,7 +74,7 @@ funnel <- function(formula, control=pointTarget(), data) {
   adjMod <- glm(newFormula,family=binomial(link="logit"),data=data)
   expected <- fitted(adjMod)
   observed <- data[[outcomeVar]]
-  id <- data[[idVar]]
+  id <- as.factor(data[[idVar]])
 
   ## calculation of points for funnel
   funnelData <- groupOutcomes(observed,expected,id)
@@ -91,11 +91,15 @@ funnel <- function(formula, control=pointTarget(), data) {
     } else {
       inflationFactor <- 1
     }
+    hypTestRes <- normHypTest(obs = funnelData$data$prop_adj,
+                              exp = funnelData$target,
+                              stdErr = funnelData$data$std_err0)
     ctrlLimits <- pointLimits(target=funnelData$target,
                               n=funnelData$data$n,
                               N=nrow(funnelData$data),
                               inflationFactor,
-                              control)
+                              control,
+                              pval = hypTestRes$pval)
     lower <- ctrlLimits$lower
     upper <- ctrlLimits$upper
 
@@ -124,14 +128,17 @@ funnel <- function(formula, control=pointTarget(), data) {
                         upper,
                         lower,
                         incontrol,
+                        hypTestRes,
                         row.names=NULL)
   control_limits = list(method=control$method, limits=control$limits)
   # add class
   out <- list(results = results,
+              formula = formula,
               control = control,
               dispersion = dispRes,
               ctrlLimits = ctrlLimits,
-              target = funnelData$target
+              target = funnelData$target,
+              data = data
               #adj_model = adj_mod,
               #casemix_adj = casemix_adj,
               #outcome = outcome
@@ -143,8 +150,8 @@ funnel <- function(formula, control=pointTarget(), data) {
 }
 
 #' @export
-bonferroni <- function(limits, n) {
-  new_limits <- limits/n
+bonferroni <- function(limits, N, ...) {
+  new_limits <- limits/N
   new_limits
 }
 
@@ -152,14 +159,16 @@ bonferroni <- function(limits, n) {
 #'
 #'
 #' @export
-pointLimits <- function(target,n,N,inflationFactor,control) {
+pointLimits <- function(target,n,N,inflationFactor,control,pval) {
   # vectors to store results
   upper <- vector(mode = "list",length = length(control$limits))
   lower <- vector(mode = "list",length = length(control$limits))
 
   # multiplicity adjustment
-  if(multAdj != "none") {
-    limits <- do.call(multAdj,args = list(limits=limits,n=N))
+  limitChr <- as.character(100 * (1 - control$limits))
+  if(control$multAdj != "none") {
+    control$limits <- do.call(control$multAdj,
+                              args = list(limits=control$limits,N=N,pval=pval))
   }
 
   for(ii in 1:length(control$limits)) {
@@ -181,7 +190,6 @@ pointLimits <- function(target,n,N,inflationFactor,control) {
       lower[[ii]] <- target + inflationFactor*(lower[[ii]] - target)
     }
   }
-  limitChr <- as.character(100 * (1 - control$limits))
   upper <- data.frame(upper)
   names(upper) <- paste0("upper", limitChr)
   lower <- data.frame(lower)
@@ -242,7 +250,7 @@ groupOutcomes <- function(observed,expected,id,target=NULL) {
   nn <- tapply(observed, id, length)
   obs_grpd <- tapply(observed, id, sum)
   prop_obs <- (obs_grpd/nn)
-  std_err <- sqrt((target*(1-target))/nn)
+  std_err0 <- sqrt((target*(1-target))/nn)
 
   # prepare output
   adj_grpd <- tapply(expected, id, sum)
@@ -250,7 +258,7 @@ groupOutcomes <- function(observed,expected,id,target=NULL) {
   data <- data.frame(id = levels(id), n = nn,
                         observed = obs_grpd, expected = adj_grpd,
                         prop_obs = prop_obs, prop_adj = prop_adj,
-                        std_err = std_err, row.names = NULL)
+                        std_err0 = std_err0, row.names = NULL)
 
   # add class
   out <- list(data = data, target = target)
@@ -260,33 +268,6 @@ groupOutcomes <- function(observed,expected,id,target=NULL) {
   out
 }
 
-
-#' print function
-#'
-#' @export
-print.funnelRes <- function(funnelRes) {
-  print(format(funnelRes$results, digits=3))
-}
-
-#' summary function
-#' @export
-summary.pfunnel <- function(pfunnel) {
-
-  # number of institutions
-  n <- nrow(pfunnel$data)
-  cat("n:",n,"\n")
-
-  # number of clinics outside various limits
-  ctrl_names <- grep("inside",names(pfunnel$data),value=TRUE)
-  print_names <- sub("inside_","",ctrl_names)
-  for(ii in 1:length(ctrl_names)) {
-    print_val <- paste0("outside ",print_names[ii],"% control limits:")
-    out <- sum(pfunnel$data[ctrl_names[ii]] == FALSE)
-    out <- sum(pfunnel$data[ctrl_names[ii]] == FALSE)
-
-    cat(print_val,out,"\n")
-  }
-}
 
 
 #'
@@ -302,7 +283,28 @@ cont_adjust_bin <- function(limit, n, target) {
   ctrl_limit
 }
 
+#'
+#'
+#' @export
+normHypTest <- function(obs, exp, stdErr) {
+  zz <- (obs - exp)/stdErr
+  pval <- pnorm(abs(zz),lower.tail = FALSE)*2
+  data.frame(zz, pval)
+}
 
+#'
+#'
+#'
+#'
 
-
+fdr <- function(limits,N,pval) {
+  out <- numeric(length = length(limits))
+  for(alpha in 1:length(limits)) {
+    orderedPos <- order(pval)
+    criticalPEach <- (orderedPos*limits[alpha])/N
+    criticalPAll <- max(pval[pval < criticalVal])
+    out[i] <- criticalPAll
+  }
+  out
+}
 

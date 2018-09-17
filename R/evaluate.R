@@ -1,27 +1,22 @@
 #' Casemix adjustment
 #'
 #' @export
-eval_indirect_adj <- function(pfunnel,method="cv",folds=10) {
-  outcome <- pfunnel$outcome
-  casemix_adj <- pfunnel$casemix_adj
+evalCasemixAdj <- function(funnelRes,method="cv",folds=10) {
 
-  # move this from here....
-  if(is.data.frame(casemix_adj)) {
-    stopifnot(!is.na(casemix_adj))
-    nms <- names(casemix_adj)
-    form <- as.formula(paste0("~",paste0(nms,collapse="+")))
-    mm <- model.matrix(form,data=casemix_adj)
-  } else {
-    mm <- casemix_adj
-  }
+  ## edit formula
+  sepFormula <- getFunnelFormula(funnelRes$formula)
+  idVar <- sepFormula$id
+  outcomeVar <- sepFormula$outcome
+  newFormula <- sepFormula$newForm
+  nullFormula <- sepFormula$nullForm
 
   # note dependency to above
-  nn <- nrow(mm)
+  N <- nrow(funnelRes$data)
 
   if (method == "cv") {
     # make folds
-    per_samp <- floor(nn/folds)
-    samp_i <- 1:nn
+    per_samp <- floor(N/folds)
+    samp_i <- 1:N
     avail <- rep(TRUE,length(samp_i))
     make_folds <- function(x) {
       out <- sample(x[avail],size = per_samp,replace=FALSE)
@@ -47,18 +42,16 @@ eval_indirect_adj <- function(pfunnel,method="cv",folds=10) {
 
     for(fold in 1:length(cv_folds)) {
       # fit null model
-      null_mod_i <- glm.fit(x = mm[cv_folds[[fold]]$train,1,drop=FALSE],
-                            y = outcome[cv_folds[[fold]]$train],
-                            family=binomial(link="logit"))
-      class(null_mod_i) <- c(class(null_mod_i),"glm")
+      null_mod_i <- glm(nullFormula,
+                        data = funnelRes$data[cv_folds[[fold]]$train,],
+                        family=binomial(link="logit"))
       # fit model
-      adj_mod_i <- glm.fit(x = mm[cv_folds[[fold]]$train,],
-                           y = outcome[cv_folds[[fold]]$train],
-                           family=binomial(link="logit"))
-      class(adj_mod_i) <- c(class(adj_mod_i),"glm")
+      adj_mod_i <- glm(newFormula,
+                       data = funnelRes$data[cv_folds[[fold]]$train,],
+                       family=binomial(link="logit"))
       # predictions
-      predict_out <- predict_(adj_mod_i, mm[cv_folds[[fold]]$test,])
-      true_out <- outcome[cv_folds[[fold]]$test]
+      predict_out <- predict(adj_mod_i, funnelRes$data[cv_folds[[fold]]$test,],type="response")
+      true_out <- funnelRes$data[cv_folds[[fold]]$test,outcomeVar]
       binary_pred <- classify(predict_out,cutoff = 0.5)
       # evaluation metrics
       brier[fold] <- mean((predict_out - true_out)^2)
@@ -70,10 +63,11 @@ eval_indirect_adj <- function(pfunnel,method="cv",folds=10) {
   }
 
   # no information rate
-  no_info_rate <- max(mean(true_out),1-mean(true_out))
+  outcome <- funnelRes$data[[outcomeVar]]
+  no_info_rate <- max(mean(outcome),1-mean(outcome))
 
   # no information brier
-  no_info_brier <- mean((mean(true_out) - true_out)^2)
+  no_info_brier <- mean((mean(outcome) - outcome)^2)
 
   # outcomes
   list(no_info_brier = no_info_brier, brier = mean(brier),
@@ -83,13 +77,3 @@ eval_indirect_adj <- function(pfunnel,method="cv",folds=10) {
 }
 
 
-
-#'
-#'
-#'
-#' @export
-predict_ <- function(mod, newdata) {
-  linear <- newdata %*% mod$coefficients
-  prob <- exp(linear) / (1 + exp(linear))
-  as.numeric(prob)
-}

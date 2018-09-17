@@ -2,10 +2,10 @@
 % Please edit documentation in R/simulate.R
 \name{simulate}
 \alias{simulate}
-\title{simulate random effects}
+\title{simulate}
 \usage{
 simulate(N, n_min, n_max, mean, sd, sample_func = NULL)
 }
 \description{
-simulate random effects
+simulate
 }

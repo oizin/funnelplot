@@ -28,13 +28,14 @@ plotLimits.funnelRes <- function(funnelRes,lengthOut) {
                               n = rng,
                               N = nrow(funnelRes$results),
                               inflationFactor = inflationFactor,
-                              control = funnelRes$control)
+                              control = funnelRes$control,
+                              pval = funnelRes$results$pval)
 
     lower <- rngLimits$lower
     upper <- rngLimits$upper
 
   } else if (funnelRes$control$method == "distribution") {
-    effectVar <- dispRes["effectVar"]
+    effectVar <- funnelRes$dispersion["effectVar"]
     rngLimits <- randomEffectLimits(target=funnelRes$target,
                                     n=rng,
                                     effectVar=effectVar,
@@ -60,12 +61,12 @@ plotLimits.funnelRes <- function(funnelRes,lengthOut) {
 plot.funnelRes <- function(funnelRes,identify="all",lengthOut=500,...) {
 
   # calculate control limits for plotting
-  plotLimits  <- plotLimits(funnelRes,lengthOut=lengthOut)
+  rngLimits  <- plotLimits(funnelRes,lengthOut=lengthOut)
 
   # long form
-  plotLimits <- data.table::melt(data.table::setDT(plotLimits),
+  rngLimits <- data.table::melt(data.table::setDT(rngLimits),
                                   id.vars = c("n"), variable.name = "limit")
-  plotLimits$limit_id <- paste0("ctrl_",sub("[a-z]*_","",plotLimits$limit))
+  rngLimits$limit_id <- paste0("ctrl_",sub("[a-z]*_","",rngLimits$limit))
 
   if(identify[1] != "all") {
     stopifnot(identify %in% funnelRes$results$id)
@@ -76,7 +77,7 @@ plot.funnelRes <- function(funnelRes,identify="all",lengthOut=500,...) {
   ggplot2::ggplot(data=funnelRes$results,ggplot2::aes(x=n,y=prop_adj)) +
     ggplot2::geom_point() +
     ggplot2::geom_hline(yintercept = funnelRes$target) +
-    ggplot2::geom_line(data=plotLimits,
+    ggplot2::geom_line(data=rngLimits,
                        ggplot2::aes(x=n,y=value,group=limit,col=limit_id))
 }
 

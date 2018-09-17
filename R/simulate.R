@@ -28,7 +28,7 @@ sample_means <- function(N,mean,sd) {
   mean_i
 }
 
-#' simulate random effects
+#' simulate
 #'
 #'
 #' @export
@@ -55,8 +55,11 @@ simulate <- function(N, n_min, n_max, mean, sd, sample_func = NULL) {
 }
 
 
+#'
+#'
+#'
 #' @export
-plot.fsim <- function(sim,effect="true") {
+plot.fsim <- function(sim,effect="true",method="dist") {
 
   # variance calculations
   rng <- floor(seq(sim$params["n_min"],  sim$params["n_max"], length.out = 100))
@@ -80,40 +83,51 @@ plot.fsim <- function(sim,effect="true") {
     v_noncomb <- se*se
   }
 
-  # calculate limits
-  upper_95 <- target + 1.96*sqrt(v_comb)
-  lower_95 <- target - 1.96*sqrt(v_comb)
-  upper_99 <- target + 2.58*sqrt(v_comb)
-  lower_99 <- target - 2.58*sqrt(v_comb)
 
-  # the plot
-  par(mfrow = c(1,2))
-  # accurate method
-  minmax <- c(min(sim$data$y) - 0.1, max(sim$data$y) + 0.1)
-  plot(sim$data[,c("n","y")], pch = 20, ylim = minmax, main = "target: distribution")
-  lines(rng, upper_95, lty = 2, col = "red")
-  lines(rng, lower_95, lty = 2, col = "red")
-  lines(rng, upper_99, lty = 2, col = "blue")
-  lines(rng, lower_99, lty = 2, col = "blue")
-  abline(h = target, col = "gray")
-  legend("topright",legend = c("95% limits", "99% limits"), col = c("red", "blue"),
-         lty = 2, bty = "n")
-  # inaccurate method
-  minmax <- c(min(sim$data$y) - 0.1, max(sim$data$y) + 0.1)
-  plot(sim$data[,c("n","y")], pch = 20, ylim = minmax, main = "target: point")
-  lines(rng, target + 1.96*sqrt(v_noncomb), lty = 2, col = "red")
-  lines(rng, target - 1.96*sqrt(v_noncomb), lty = 2, col = "red")
-  lines(rng, target + 2.58*sqrt(v_noncomb), lty = 2, col = "blue")
-  lines(rng, target - 2.58*sqrt(v_noncomb), lty = 2, col = "blue")
-  abline(h = target, col = "gray")
-  legend("topright",legend = c("95% limits", "99% limits"), col = c("red", "blue"),
-         lty = 2, bty = "n")
-  par(mfrow = c(1,1))
+  if(method == "dist") {
+    # calculate limits
+    upper_95 <- target + 1.96*sqrt(v_comb)
+    lower_95 <- target - 1.96*sqrt(v_comb)
+    upper_99 <- target + 2.58*sqrt(v_comb)
+    lower_99 <- target - 2.58*sqrt(v_comb)
+
+    pts <- data.frame(n = sim$data$n, y = sim$data$y)
+    lmts <- data.frame(n = rng, upper_95, lower_95, upper_99, lower_99)
+    lmts <- tidyr::gather(lmts,"limit","y",-1)
+    lmts$limit_id <- c(rep("95%", length(rng)*2), rep("99%", length(rng)*2))
+
+    out <- ggplot2::ggplot(data=pts,ggplot2::aes(x=n,y=y)) +
+      ggplot2::geom_point() +
+      ggplot2::geom_hline(yintercept = sim$params["mean"]) +
+      ggplot2::geom_line(data=lmts,
+                         ggplot2::aes(x=n,y=y,group=limit,col=limit_id),linetype=2)
+
+  } else if (method == "point") {
+    upper_95 <- target + 1.96*sqrt(v_noncomb)
+    lower_95 <- target - 1.96*sqrt(v_noncomb)
+    upper_99 <- target + 2.58*sqrt(v_noncomb)
+    lower_99 <- target - 2.58*sqrt(v_noncomb)
+
+    pts <- data.frame(n = sim$data$n, y = sim$data$y)
+    lmts <- data.frame(n = rng, upper_95, lower_95, upper_99, lower_99)
+    lmts <- tidyr::gather(lmts,"limit","y",-1)
+    lmts$limit_id <- c(rep("95%", length(rng)*2), rep("99%", length(rng)*2))
+
+    out <- ggplot2::ggplot(data=pts,ggplot2::aes(x=n,y=y)) +
+      ggplot2::geom_point() +
+      ggplot2::geom_hline(yintercept = sim$params["mean"]) +
+      ggplot2::geom_line(data=lmts,
+                         ggplot2::aes(x=n,y=y,group=limit,col=limit_id),linetype=2)
+  }
+  out
 }
 
 
-# plot(simulate(100, 50, 1000, 0.22,  sqrt(0.007711165 )),effect="estimated")
 
-# f = function(n) rnbinom(n, size = 1.1404360,mu = 775.0000000)
+#'
+#'
+#'
+eg_sample_func = function(n) rnbinom(n, size = 1.1404360,mu = 775.0000000)
+
 # plot(tt <- simulate(100, 50, 1000, 0.22,  .15, sample_func = f),effect="estimated")
 
