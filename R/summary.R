@@ -1,5 +1,6 @@
+#' List institutional outliers
 #'
-#'
+#' @param funnelRes funnel plot object
 #'
 #' @export
 outliers <- function(funnelRes) {
@@ -10,6 +11,8 @@ outliers <- function(funnelRes) {
 }
 
 #' print function
+#'
+#' @param funnelRes funnel plot object
 #'
 #' @export
 print.funnelRes <- function(funnelRes) {

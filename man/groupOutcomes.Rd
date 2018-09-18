@@ -6,6 +6,15 @@
 \usage{
 groupOutcomes(observed, expected, id, target = NULL)
 }
+\arguments{
+\item{observed}{observed number of events}
+
+\item{expected}{expected number of events}
+
+\item{id}{institution identifier}
+
+\item{target}{institution target value}
+}
 \description{
 Calculate proportion of
 }

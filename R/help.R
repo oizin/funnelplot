@@ -1,7 +1,7 @@
-#' Hello.
+#' edit funnel plot formula
 #'
 #' @params formula
-#' @export
+#'
 getFunnelFormula <- function(formula) {
   vars <- all.vars(formula)
   p <- length(vars)
@@ -12,8 +12,8 @@ getFunnelFormula <- function(formula) {
   } else {
     newForm <- nullForm
   }
-  list(newForm = as.formula(newForm),
-       nullForm = as.formula(nullForm),
+  list(newForm = stats::as.formula(newForm),
+       nullForm = stats::as.formula(nullForm),
        outcome = vars[1],
        id = vars[p])
 }

@@ -2,10 +2,23 @@
 % Please edit documentation in R/simulate.R
 \name{simulate}
 \alias{simulate}
-\title{simulate}
+\title{Simulate data for a funnel plot}
 \usage{
 simulate(N, n_min, n_max, mean, sd, sample_func = NULL)
 }
+\arguments{
+\item{N}{number of institutions}
+
+\item{n_min}{potential size of smallest institution}
+
+\item{n_max}{potential size of largest institution}
+
+\item{mean}{mean of institution mean distribution}
+
+\item{sd}{standard deviation of institution mean distribution}
+
+\item{sample_func}{function to sample institution size in a form other than Unif(n_min,n_max)}
+}
 \description{
-simulate
+Simulate data for a funnel plot
 }

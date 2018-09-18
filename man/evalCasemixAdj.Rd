@@ -6,6 +6,13 @@
 \usage{
 evalCasemixAdj(funnelRes, method = "cv", folds = 10)
 }
+\arguments{
+\item{funnelRes}{funnel plot object}
+
+\item{method}{cross-validation}
+
+\item{folds}{10}
+}
 \description{
 Casemix adjustment
 }

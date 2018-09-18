@@ -6,6 +6,9 @@
 \usage{
 auc_roc(prob, truth, length_out = 100)
 }
+\arguments{
+\item{length_out}{100}
+}
 \description{
 Area under the receiver operating characteristic curve
 }

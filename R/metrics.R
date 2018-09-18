@@ -11,8 +11,9 @@ classify <- function(prob, cutoff = 0.5) {
 
 #' labels data like a confusion matrix
 #'
-#' @param pred
-#' @param truth
+#' @params pred
+#' @params truth
+#'
 #' @export
 confusion <- function(pred,truth) {
   labelled <- rep("TN",length(pred))
@@ -24,8 +25,7 @@ confusion <- function(pred,truth) {
 
 #' accuracy
 #'
-#' @param pred
-#' @param truth
+#' @inheritParams confusion
 #' @export
 accuracy <- function(pred,truth) {
   sum(pred == truth)/length(pred)
@@ -33,8 +33,7 @@ accuracy <- function(pred,truth) {
 
 #' error rate
 #'
-#' @param pred
-#' @param truth
+#' @inheritParams confusion
 #' @export
 err <- function(pred,truth) {
   1 - accuracy(pred,truth)
@@ -42,8 +41,7 @@ err <- function(pred,truth) {
 
 #' recall, sensitivity, true positive rate
 #'
-#' @param pred
-#' @param truth
+#' @inheritParams confusion
 #' @export
 tpr <- function(pred,truth) {
   tp <- sum((pred == truth) & (truth == 1))
@@ -53,8 +51,7 @@ tpr <- function(pred,truth) {
 
 #' specificity
 #'
-#' @param pred
-#' @param truth
+#' @inheritParams confusion
 #' @export
 sp <- function(pred,truth) {
   tn <- sum((pred == truth) & (truth == 0))
@@ -64,8 +61,7 @@ sp <- function(pred,truth) {
 
 #' fpr
 #'
-#' @param pred
-#' @param truth
+#' @inheritParams confusion
 #' @export
 fpr <- function(pred,truth) {
   fp <- sum((pred != truth) & (truth == 0))
@@ -75,8 +71,7 @@ fpr <- function(pred,truth) {
 
 #' precision, positive predictive value
 #'
-#' @param pred
-#' @param truth
+#' @inheritParams confusion
 #' @export
 ppv <- function(pred,truth) {
   tp <- sum((pred == truth) & (truth == 1))
@@ -86,6 +81,8 @@ ppv <- function(pred,truth) {
 
 #' Receiver operating characteristic curve
 #'
+#' @param length_out 100
+#' @inheritParams confusion
 #' @export
 roc <- function(prob,truth,length_out=100) {
   cutoffs <- seq(0,1,length.out=length_out)
@@ -99,6 +96,8 @@ roc <- function(prob,truth,length_out=100) {
 }
 
 #' Area under the receiver operating characteristic curve
+#'
+#' @inheritParams roc
 #' @export
 auc_roc <- function(prob,truth,length_out=100) {
   roc_df <- roc(prob,truth,length_out=length_out)
@@ -111,6 +110,10 @@ auc_roc <- function(prob,truth,length_out=100) {
   sum(out,na.rm=TRUE)
 }
 
+
+#' precision recall curves
+#'
+#' @inheritParams roc
 #' @export
 pr <- function(prob,truth,length_out=100) {
   cutoffs <- seq(0,1,length.out=length_out)
@@ -125,7 +128,7 @@ pr <- function(prob,truth,length_out=100) {
 
 #' Area under the precision recall curve
 #'
-#'
+#' @inheritParams roc
 #' @export
 auc_pr <- function(prob,truth,length_out=100) {
   pr_df <- pr(prob,truth,length_out=length_out)

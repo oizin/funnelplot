@@ -6,6 +6,9 @@
 \usage{
 roc(prob, truth, length_out = 100)
 }
+\arguments{
+\item{length_out}{100}
+}
 \description{
 Receiver operating characteristic curve
 }

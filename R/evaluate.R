@@ -1,5 +1,9 @@
 #' Casemix adjustment
 #'
+#' @param funnelRes funnel plot object
+#' @param method cross-validation
+#' @param folds 10
+#'
 #' @export
 evalCasemixAdj <- function(funnelRes,method="cv",folds=10) {
 
@@ -42,21 +46,21 @@ evalCasemixAdj <- function(funnelRes,method="cv",folds=10) {
 
     for(fold in 1:length(cv_folds)) {
       # fit null model
-      null_mod_i <- glm(nullFormula,
+      null_mod_i <- stats::glm(nullFormula,
                         data = funnelRes$data[cv_folds[[fold]]$train,],
-                        family=binomial(link="logit"))
+                        family=stats::binomial(link="logit"))
       # fit model
-      adj_mod_i <- glm(newFormula,
+      adj_mod_i <- stats::glm(newFormula,
                        data = funnelRes$data[cv_folds[[fold]]$train,],
-                       family=binomial(link="logit"))
+                       family=stats::binomial(link="logit"))
       # predictions
-      predict_out <- predict(adj_mod_i, funnelRes$data[cv_folds[[fold]]$test,],type="response")
+      predict_out <- stats::predict(adj_mod_i, funnelRes$data[cv_folds[[fold]]$test,],type="response")
       true_out <- funnelRes$data[cv_folds[[fold]]$test,outcomeVar]
       binary_pred <- classify(predict_out,cutoff = 0.5)
       # evaluation metrics
       brier[fold] <- mean((predict_out - true_out)^2)
       accuracy[fold] <- accuracy(binary_pred,true_out)
-      pseudoR2[fold] <- 1-(logLik(adj_mod_i)/logLik(null_mod_i))
+      pseudoR2[fold] <- 1-(stats::logLik(adj_mod_i)/stats::logLik(null_mod_i))
       auc_roc[fold] <- auc_roc(predict_out,true_out)
       auc_pr[fold] <- auc_pr(predict_out,true_out)
     }

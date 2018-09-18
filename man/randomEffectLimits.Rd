@@ -7,9 +7,13 @@
 randomEffectLimits(target, n, effectVar, control)
 }
 \arguments{
-\item{target}{...}
+\item{target}{institution mean distribution mean target value}
 
-\item{control}{}
+\item{n}{precision values at which to calculate limit}
+
+\item{effectVar}{institution mean distribution variance}
+
+\item{control}{description of task}
 }
 \description{
 Calculate ...

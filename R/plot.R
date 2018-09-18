@@ -1,12 +1,15 @@
 #' helper function for plotting the funnel plots
 #'
-#' @export
+#' @param funnelRes funnel plot object
+#'
+#'
 plotLimits <- function(funnelRes,...) UseMethod("plotLimits")
 
+#' helper function for plotting the funnel plots
 #'
+#' @param funnelRes funnel plot object
+#' @param lengthOut 500
 #'
-#'
-#' @export
 plotLimits.funnelRes <- function(funnelRes,lengthOut) {
 
   # limits
@@ -57,8 +60,12 @@ plotLimits.funnelRes <- function(funnelRes,lengthOut) {
 
 #' plot funnel plot
 #'
-#' @export
-plot.funnelRes <- function(funnelRes,identify="all",lengthOut=500,...) {
+#' @param funnelRes funnel plot object
+#' @param identify all
+#' @param label none
+#' @param lengthOut 500
+#'
+plot.funnelRes <- function(funnelRes,identify="all",label="none",lengthOut=500,...) {
 
   # calculate control limits for plotting
   rngLimits  <- plotLimits(funnelRes,lengthOut=lengthOut)
@@ -68,16 +75,30 @@ plot.funnelRes <- function(funnelRes,identify="all",lengthOut=500,...) {
                                   id.vars = c("n"), variable.name = "limit")
   rngLimits$limit_id <- paste0("ctrl_",sub("[a-z]*_","",rngLimits$limit))
 
-  if(identify[1] != "all") {
+  if(identify[1] == "outliers") {
+    outlierVars <- names(funnelRes$results)[grep(pattern = "inside",x = names(funnelRes$results))]
+    outlierRows <- rowSums(!funnelRes$results[outlierVars,drop=FALSE])
+    funnelRes$results <- funnelRes$results[outlierRows,]
+  } else if(identify[1] != "all") {
     stopifnot(identify %in% funnelRes$results$id)
     funnelRes$results <- funnelRes$results[funnelRes$results$id %in% identify,]
   }
-
   # the plot
-  ggplot2::ggplot(data=funnelRes$results,ggplot2::aes(x=n,y=prop_adj)) +
+  pp <- ggplot2::ggplot(data=funnelRes$results,ggplot2::aes_(x="n",y="prop_adj")) +
     ggplot2::geom_point() +
     ggplot2::geom_hline(yintercept = funnelRes$target) +
     ggplot2::geom_line(data=rngLimits,
-                       ggplot2::aes(x=n,y=value,group=limit,col=limit_id))
+                       ggplot2::aes_(x="n",y="value",group="limit",col="limit_id"))
+  if(label[1] == "outliers") {
+    outlierVars <- names(funnelRes$results)[grep(pattern = "inside",x = names(funnelRes$results))]
+    outlierRows <- (rowSums(!funnelRes$results[,outlierVars,drop=FALSE]) >= 1)
+    labelData <- funnelRes$results[outlierRows,]
+    pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_(x="n",y="prop_adj",label="id"),size=4)
+  } else if(label[1] != "none") {
+    stopifnot(label %in% funnelRes$results$id)
+    labelData <- funnelRes$results[funnelRes$results$id %in% label,]
+    pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_(x="n",y="prop_adj",label="id"),size=4)
+  }
+  pp
 }
 

@@ -3,16 +3,18 @@
 #
 #########################################################################
 
+#' Dispersion parameters
+#'
+#' @param funnelData funnel plot data
+#' @param trim winsorisation
+#'
+dispersion <- function(funnelData,trim=NULL) UseMethod("dispersion")
 
 #' Dispersion parameters
 #'
-#' @param pfunnel
-#' @param w
+#' @param funnelData funnel plot data
+#' @param trim winsorisation
 #'
-#' @export
-dispersion <- function(funnelData,trim=NULL) UseMethod("dispersion")
-
-#' @export
 dispersion.funnelData <- function(funnelData,trim=NULL) {
 
   #
@@ -25,7 +27,7 @@ dispersion.funnelData <- function(funnelData,trim=NULL) {
 
   # chi-square test for over-dispersion
   inflationFactorSq <- chi <- (1/N)*sum(zz^2)
-  prob <- 2*pchisq(chi,1,lower.tail = FALSE)
+  prob <- 2*stats::pchisq(chi,1,lower.tail = FALSE)
 
   # winsorisation
   if(!is.null(trim)) {
@@ -71,8 +73,8 @@ funnel <- function(formula, control=pointTarget(), data) {
   newFormula <- sepFormula$newForm
 
   ## casemix adjustment
-  adjMod <- glm(newFormula,family=binomial(link="logit"),data=data)
-  expected <- fitted(adjMod)
+  adjMod <- stats::glm(newFormula,family=stats::binomial(link="logit"),data=data)
+  expected <- stats::fitted(adjMod)
   observed <- data[[outcomeVar]]
   id <- as.factor(data[[idVar]])
 
@@ -120,7 +122,7 @@ funnel <- function(formula, control=pointTarget(), data) {
                           funnelData$data$prop_adj >= lower[[ii]])
   }
   incontrol <- data.frame(incontrol)
-  tmp <- as.character(100* (1-(control$limits)))
+  tmp <- as.character(100*(1-(control$limits)))
   names(incontrol) <- paste0("inside",tmp)
 
   ## output
@@ -149,16 +151,25 @@ funnel <- function(formula, control=pointTarget(), data) {
   out
 }
 
-#' @export
-bonferroni <- function(limits, N, ...) {
+#' Bonferroni multiplicity adjustment
+#'
+#' @param limits alpha leves
+#' @param N number of tests
+#'
+bonferroni <- function(limits, N,...) {
   new_limits <- limits/N
   new_limits
 }
 
+#' Calculate control limits for pointTarget method
 #'
+#' @param target institution target value
+#' @param n precision values at which to calculate limit
+#' @param N number of institutions
+#' @param inflationFactor Unexplained variation
+#' @param control description of task
+#' @param pval p-values for FDR calculations
 #'
-#'
-#' @export
 pointLimits <- function(target,n,N,inflationFactor,control,pval) {
   # vectors to store results
   upper <- vector(mode = "list",length = length(control$limits))
@@ -176,15 +187,15 @@ pointLimits <- function(target,n,N,inflationFactor,control,pval) {
       # standard error for approximations
       stdErr0 <- sqrt(target*(1-target)*(1/n))
       # distribution quantiles
-      zzlower <- qnorm(control$limits[ii]/2)
-      zzupper <- qnorm(1-(control$limits[ii]/2))
+      zzlower <- stats::qnorm(control$limits[ii]/2)
+      zzupper <- stats::qnorm(1-(control$limits[ii]/2))
       # control limits
       lower[[ii]] <- target + zzlower*inflationFactor*stdErr0
       upper[[ii]] <- target + zzupper*inflationFactor*stdErr0
     } else if (control$normalApprox == FALSE) {
       # continuity adjusted control limits
-      upper[[ii]] <- cont_adjust_bin(1-(control$limits[ii]/2),n,target)
-      lower[[ii]] <- cont_adjust_bin((control$limits[ii]/2),n,target)
+      upper[[ii]] <- contAdjustBin(1-(control$limits[ii]/2),n,target)
+      lower[[ii]] <- contAdjustBin((control$limits[ii]/2),n,target)
       # over-dispersion adjustment
       upper[[ii]] <- target + inflationFactor*(upper[[ii]] - target)
       lower[[ii]] <- target + inflationFactor*(lower[[ii]] - target)
@@ -201,26 +212,26 @@ pointLimits <- function(target,n,N,inflationFactor,control,pval) {
 
 #' Calculate ...
 #'
-#' @param target ...
-#' @param n
-#' @param effectVar
-#' @param control
+#' @param target institution mean distribution mean target value
+#' @param effectVar institution mean distribution variance
+#' @inheritParams pointLimits
 #'
-#' @export
 randomEffectLimits <- function(target,n,effectVar,control) {
 
   # vectors to store results
   upper <- vector(mode = "list",length = length(control$limits))
   lower <- vector(mode = "list",length = length(control$limits))
 
-  zzlower <- qnorm(control$limits[ii]/2)
-  zzupper <- qnorm(1-(control$limits[ii]/2))
+  for(ii in 1:length(control$limits)) {
+    zzlower <- stats::qnorm(control$limits[ii]/2)
+    zzupper <- stats::qnorm(1-(control$limits[ii]/2))
 
-  var0 <- target*(1-target)*(1/n)
-  upper[[ii]] <- target + zzupper*sqrt(var0 + effectVar)
-  lower[[ii]] <- target + zzlower*sqrt(var0 + effectVar)
+    var0 <- target*(1-target)*(1/n)
+    upper[[ii]] <- target + zzupper*sqrt(var0 + effectVar)
+    lower[[ii]] <- target + zzlower*sqrt(var0 + effectVar)
+  }
 
-  tmp <- as.character(100* (1-(control$limits)))
+  tmp <- as.character(100*(1-(control$limits)))
   upper <- data.frame(upper)
   names(upper) <- paste0("upper_",tmp)
   lower <- data.frame(lower)
@@ -234,7 +245,11 @@ randomEffectLimits <- function(target,n,effectVar,control) {
 
 #' Calculate proportion of
 #'
-#' @export
+#' @param observed observed number of events
+#' @param expected expected number of events
+#' @param id institution identifier
+#' @inheritParams pointLimits
+#'
 groupOutcomes <- function(observed,expected,id,target=NULL) {
   # checks
   stopifnot(is.factor(id))
@@ -270,40 +285,46 @@ groupOutcomes <- function(observed,expected,id,target=NULL) {
 
 
 
+#' Continuity adjusted binomial limits
 #'
+#' @param limit control limit
+#' @param n
+#' @inheritParams pointLimits
 #'
-#'
-#' @export
-cont_adjust_bin <- function(limit, n, target) {
-  rp <- qbinom(p = limit,size = n,prob = target)
-  t1 <- pbinom(q = rp,size = n,prob = target)
-  t2 <- dbinom(x = rp,size = n,prob = target)
+contAdjustBin <- function(limit, n, target) {
+  rp <- stats::qbinom(p = limit,size = n,prob = target)
+  t1 <- stats::pbinom(q = rp,size = n,prob = target)
+  t2 <- stats::dbinom(x = rp,size = n,prob = target)
   aa <- (t1-limit)/t2
   ctrl_limit <- (rp-aa)/n
   ctrl_limit
 }
 
+#' Normal assuming hypothesis test on grouped data
 #'
+#' @param obs observed
+#' @param exp null hypothesis
+#' @param stdErr standard error
 #'
-#' @export
 normHypTest <- function(obs, exp, stdErr) {
   zz <- (obs - exp)/stdErr
-  pval <- pnorm(abs(zz),lower.tail = FALSE)*2
+  pval <- stats::pnorm(abs(zz),lower.tail = FALSE)*2
   data.frame(zz, pval)
 }
 
+#' False discovery rate multiplicity adjustment
 #'
+#' @param limits
+#' @param pval
+#' @inheritParams pointLimits
 #'
-#'
-#'
-
 fdr <- function(limits,N,pval) {
   out <- numeric(length = length(limits))
   for(alpha in 1:length(limits)) {
     orderedPos <- order(pval)
     criticalPEach <- (orderedPos*limits[alpha])/N
-    criticalPAll <- max(pval[pval < criticalVal])
-    out[i] <- criticalPAll
+    criticalPAll <- max(pval[pval < criticalPEach])
+    out[alpha] <- criticalPAll
   }
   out
 }

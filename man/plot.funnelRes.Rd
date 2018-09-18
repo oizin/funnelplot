@@ -4,8 +4,17 @@
 \alias{plot.funnelRes}
 \title{plot funnel plot}
 \usage{
-\method{plot}{funnelRes}(funnelRes, identify = "all", lengthOut = 500,
-  ...)
+\method{plot}{funnelRes}(funnelRes, identify = "all", label = "none",
+  lengthOut = 500, ...)
+}
+\arguments{
+\item{funnelRes}{funnel plot object}
+
+\item{identify}{all}
+
+\item{label}{none}
+
+\item{lengthOut}{500}
 }
 \description{
 plot funnel plot

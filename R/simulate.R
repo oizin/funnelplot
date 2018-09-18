@@ -1,10 +1,10 @@
 
-#'
+#' Sample a certain number of observations
 #'
 #' @export
-sample_nobs <- function(N,sample_func) {
+sample_nobs <- function(N,n_min,n_max,sample_func) {
   if (is.null(sample_func)) {
-    n_i <- round(runif(n = N, min = n_min, max = n_max), 0)
+    n_i <- round(stats::runif(n = N, min = n_min, max = n_max), 0)
 
   } else {
     n_i <- sample_func(n = N)
@@ -18,9 +18,12 @@ sample_nobs <- function(N,sample_func) {
   n_i
 }
 
+#' Sample means
+#'
+#'
 #' @export
 sample_means <- function(N,mean,sd) {
-  mean_i <- rnorm(N, mean = mean, sd = sd)
+  mean_i <- stats::rnorm(N, mean = mean, sd = sd)
   if (any(mean_i <= 0)) {
     replace <- (mean_i <= 0)
     mean_i[replace] <- sample_means(N = sum(replace),mean,sd)
@@ -28,23 +31,29 @@ sample_means <- function(N,mean,sd) {
   mean_i
 }
 
-#' simulate
+#' Simulate data for a funnel plot
 #'
+#' @param N number of institutions
+#' @param n_min potential size of smallest institution
+#' @param n_max potential size of largest institution
+#' @param mean mean of institution mean distribution
+#' @param sd standard deviation of institution mean distribution
+#' @param sample_func function to sample institution size in a form other than Unif(n_min,n_max)
 #'
 #' @export
 simulate <- function(N, n_min, n_max, mean, sd, sample_func = NULL) {
 
-  if (pnorm(0, mean, sd) > 0.0) {
+  if (stats::pnorm(0, mean, sd) > 0.0) {
     warning("unreliable results where negative support on random effect distribution exceeds 0")
   }
 
-  n_i <- sample_nobs(N,sample_func=sample_func)
+  n_i <- sample_nobs(N,n_min,n_max,sample_func=sample_func)
   n_min <- min(n_i)
   n_max <- max(n_i)
 
   mean_i <- sample_means(N, mean, sd)
 
-  m_i <- rbinom(n = N, size = n_i, prob = mean_i)
+  m_i <- stats::rbinom(n = N, size = n_i, prob = mean_i)
   y_i <- m_i/n_i
   se_i <- sqrt(y_i*(1 - y_i)*(1/n_i))
   out <- list(data = data.frame(n = n_i, y = y_i, se = se_i),
@@ -55,8 +64,11 @@ simulate <- function(N, n_min, n_max, mean, sd, sample_func = NULL) {
 }
 
 
+#' Plot the simulated data
 #'
-#'
+#' @param sim the simulation results
+#' @param effect true
+#' @param method dist
 #'
 #' @export
 plot.fsim <- function(sim,effect="true",method="dist") {
@@ -96,11 +108,11 @@ plot.fsim <- function(sim,effect="true",method="dist") {
     lmts <- tidyr::gather(lmts,"limit","y",-1)
     lmts$limit_id <- c(rep("95%", length(rng)*2), rep("99%", length(rng)*2))
 
-    out <- ggplot2::ggplot(data=pts,ggplot2::aes(x=n,y=y)) +
+    out <- ggplot2::ggplot(data=pts,ggplot2::aes_(x="n",y="y")) +
       ggplot2::geom_point() +
       ggplot2::geom_hline(yintercept = sim$params["mean"]) +
       ggplot2::geom_line(data=lmts,
-                         ggplot2::aes(x=n,y=y,group=limit,col=limit_id),linetype=2)
+                         ggplot2::aes_(x="n",y="y",group="limit",col="limit_id"),linetype=2)
 
   } else if (method == "point") {
     upper_95 <- target + 1.96*sqrt(v_noncomb)
@@ -113,21 +125,19 @@ plot.fsim <- function(sim,effect="true",method="dist") {
     lmts <- tidyr::gather(lmts,"limit","y",-1)
     lmts$limit_id <- c(rep("95%", length(rng)*2), rep("99%", length(rng)*2))
 
-    out <- ggplot2::ggplot(data=pts,ggplot2::aes(x=n,y=y)) +
+    out <- ggplot2::ggplot(data=pts,ggplot2::aes_(x="n",y="y")) +
       ggplot2::geom_point() +
       ggplot2::geom_hline(yintercept = sim$params["mean"]) +
       ggplot2::geom_line(data=lmts,
-                         ggplot2::aes(x=n,y=y,group=limit,col=limit_id),linetype=2)
+                         ggplot2::aes_(x="n",y="y",group="limit",col="limit_id"),linetype=2)
   }
   out
 }
 
 
-
+#' Example sampling function for simulate
 #'
+#' @param n number of sample to take
 #'
-#'
-eg_sample_func = function(n) rnbinom(n, size = 1.1404360,mu = 775.0000000)
-
-# plot(tt <- simulate(100, 50, 1000, 0.22,  .15, sample_func = f),effect="estimated")
-
+#' @export
+eg_sample_func <- function(n) stats::rnbinom(n, size = 1.1404360,mu = 775.0000000)

@@ -12,4 +12,6 @@ RoxygenNote: 6.1.0
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
-Imports: ggplot2
+Imports: ggplot2,
+  tidyr,
+  data.table

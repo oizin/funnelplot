@@ -2,10 +2,10 @@
 % Please edit documentation in R/help.R
 \name{getFunnelFormula}
 \alias{getFunnelFormula}
-\title{Hello.}
+\title{edit funnel plot formula}
 \usage{
 getFunnelFormula(formula)
 }
 \description{
-Hello.
+edit funnel plot formula
 }
