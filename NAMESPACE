@@ -2,6 +2,7 @@
 
 S3method(plot,fsim)
 S3method(print,funnelRes)
+S3method(plot,funnelRes)
 export(accuracy)
 export(auc_pr)
 export(auc_roc)
