@@ -1,5 +1,3 @@
-source("create.R")
-
 #' helper function for plotting the funnel plots
 #'
 #' @param funnelRes funnel plot object
