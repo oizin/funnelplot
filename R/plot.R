@@ -65,6 +65,7 @@ plotLimits.funnelRes <- function(funnelRes,lengthOut) {
 #' @param label none
 #' @param lengthOut 500
 #'
+#' @export
 plot.funnelRes <- function(funnelRes,identify="all",label="none",lengthOut=500,...) {
 
   # calculate control limits for plotting
