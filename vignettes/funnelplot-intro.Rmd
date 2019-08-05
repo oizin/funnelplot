@@ -1,0 +1,92 @@
+---
+title: "Introduction to funnelplot"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{intro-funnelplot}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Funnel plots are designed for ... For an excellent introduction see Spiegelhalter (2005).
+
+```{r setup}
+library(funnelplot)
+library(ggplot2)
+```
+
+Our example dataset of XX hospitals. Outcome is test. Two variables A and B.
+
+```{r}
+data("example_data", package = "funnelplot")
+head(example_data)
+```
+
+### Unadjusted funnel plot 
+
+We first fit an unadjusted funnel plot. The resulting plot shows the raw event proportions against the number of observations 
+per cluster. There appear to be some outliers but ....
+
+```{r}
+# outcome ~ covariates | cluster ID
+f1 <- funnel(test ~ 1 | hosp_id, data = example_data)
+plot(f1)
+```
+
+The plot returned by funnelplot::plot is a standard ggplot2 object, allowing a large degree of customisation to fit the end use.  
+
+```{r}
+pp <- plot(f1)
+class(pp)
+pp +
+  theme_bw()
+```
+
+funnelplot contains other useful functions such as `outliers` and ...
+
+```{r}
+outliers(f1)
+```
+
+### Risk adjustment 
+
+Generally raw comparison of event rates between institutions runs the risk of failing to account for differences in the populations between each cluster (e.g. a tendency for sicker patients to attend a particular hospital). To account for this a statistical model can be used to estimated hat{y} for each observation in the data - the predicted outcome given the observed covariates - which can be compared to the observed outcome y to obtain standardised rates per institution. Currently funnelplot uses logistic regression `stats::glm` for risk adjustment. A standard R formula of the form `outcome ~ covariates | clusterID` creates a risk adjusted funnel plot object. 
+
+```{r}
+f2 <- funnel(test ~ var | hosp_id, data = example_data)
+plot(f2)
+```
+
+### Adjusting for multiplicity and overdispersion
+
+funnelplot can ... through the `pointTarget` function, that is passed to the control argument. Using `pointTarget` we can also pass an arbitrary number of control limits to funnel. In comparison to the above plots we now see that ... 
+
+```{r}
+f3 <- funnel(test ~ var | hosp_id, data = example_data)
+plot(f3)
+```
+
+### Standardised rates
+
+By default funnelplot produces risk adjusted rates, but in many circumstances standardised rates (of the form observed/expected) will be of more interest.
+
+```{r}
+f4 <- funnel(test ~ var | hosp_id, data = example_data)
+plot(f4)
+```
+
+### References
+
+Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. Journal of the royal statistical society. Series B (Methodological), 289-300.
+
+Jones, H. E., Ohlssen, D. I., & Spiegelhalter, D. J. (2008). Use of the false discovery rate when comparing multiple health care providers. Journal of clinical epidemiology, 61(3), 232-240.
+
+Spiegelhalter, D. J. (2005). Funnel plots for comparing institutional performance. Statistics in medicine, 24(8), 1185-1202.
+
+?? Overdispersion

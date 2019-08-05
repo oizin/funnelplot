@@ -6,6 +6,11 @@
 \usage{
 confusion(pred, truth)
 }
+\arguments{
+\item{pred}{prediction (binary)}
+
+\item{truth}{observed value}
+}
 \description{
 labels data like a confusion matrix
 }

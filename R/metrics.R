@@ -1,7 +1,7 @@
 #' classify a probability
 #'
-#' @param prob
-#' @param cutoff
+#' @param prob probability of event
+#' @param cutoff threshold above which events are classified as 1, else 0.
 #' @export
 classify <- function(prob, cutoff = 0.5) {
   pred <- rep(0, length(prob))
@@ -11,8 +11,8 @@ classify <- function(prob, cutoff = 0.5) {
 
 #' labels data like a confusion matrix
 #'
-#' @params pred
-#' @params truth
+#' @param pred prediction (binary)
+#' @param truth observed value
 #'
 #' @export
 confusion <- function(pred,truth) {
@@ -81,6 +81,7 @@ ppv <- function(pred,truth) {
 
 #' Receiver operating characteristic curve
 #'
+#' @param prob prediction (probability)
 #' @param length_out 100
 #' @inheritParams confusion
 #' @export

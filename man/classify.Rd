@@ -6,6 +6,11 @@
 \usage{
 classify(prob, cutoff = 0.5)
 }
+\arguments{
+\item{prob}{probability of event}
+
+\item{cutoff}{threshold above which events are classified as 1, else 0.}
+}
 \description{
 classify a probability
 }

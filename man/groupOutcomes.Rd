@@ -2,19 +2,19 @@
 % Please edit documentation in R/create.R
 \name{groupOutcomes}
 \alias{groupOutcomes}
-\title{Calculate proportion of}
+\title{Calculate proportion of ???}
 \usage{
 groupOutcomes(observed, expected, id, target = NULL)
 }
 \arguments{
-\item{observed}{observed number of events}
+\item{observed}{observed outcome (a vector)}
 
-\item{expected}{expected number of events}
+\item{expected}{expected outcome (a vector)}
 
 \item{id}{institution identifier}
 
 \item{target}{institution target value (a proportion)}
 }
 \description{
-Calculate proportion of
+Calculate proportion of ???
 }

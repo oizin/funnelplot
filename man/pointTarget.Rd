@@ -11,6 +11,8 @@ pointTarget(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE,
 \item{trim}{the fraction (0 to 0.5) of observations to be trimmed from each end}
 
 \item{multAdj}{...}
+
+\item{standardised}{...}
 }
 \description{
 Target is a point

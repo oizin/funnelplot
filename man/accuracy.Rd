@@ -6,6 +6,11 @@
 \usage{
 accuracy(pred, truth)
 }
+\arguments{
+\item{pred}{prediction (binary)}
+
+\item{truth}{observed value}
+}
 \description{
 accuracy
 }

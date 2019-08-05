@@ -1,10 +1,10 @@
 Package: funnelplot
 Type: Package
 Title: Create Funnel Plots
-Version: 0.1.0
+Version: 0.1.1
 Author: Oisin Fitzgerald
 Maintainer: Oisin Fitzgerald <fitzgeraldoisin@gmail.com>
-Description: Create funnel plots for comparing institutional performance.
+Description: Funnel plots for comparison of institutional performance.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

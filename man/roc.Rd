@@ -7,6 +7,10 @@
 roc(prob, truth, length_out = 100)
 }
 \arguments{
+\item{prob}{prediction (probability)}
+
+\item{truth}{observed value}
+
 \item{length_out}{100}
 }
 \description{

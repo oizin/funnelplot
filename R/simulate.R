@@ -56,6 +56,7 @@ simulate <- function(N, n_min, n_max, mean, sd, sample_func = NULL) {
   m_i <- stats::rbinom(n = N, size = n_i, prob = mean_i)
   y_i <- m_i/n_i
   se_i <- sqrt(y_i*(1 - y_i)*(1/n_i))
+
   out <- list(data = data.frame(n = n_i, y = y_i, se = se_i),
               params = c(n_min = n_min, n_max = n_max, mean = mean, sd = sd),
               mean = mean_i)
