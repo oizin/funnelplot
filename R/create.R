@@ -132,7 +132,7 @@ funnel <- function(formula, control=pointTarget(), data) {
                         incontrol,
                         hypTestRes,
                         row.names=NULL)
-  control_limits = list(method=control$method, limits=control$limits)
+
   # add class
   out <- list(results = results,
               formula = formula,
@@ -163,7 +163,7 @@ bonferroni <- function(limits, N,...) {
 
 #' Calculate control limits for pointTarget method
 #'
-#' @param target institution target value
+#' @param target institution target value (a proportion)
 #' @param n precision values at which to calculate limit
 #' @param N number of institutions
 #' @param inflationFactor Unexplained variation
@@ -183,24 +183,41 @@ pointLimits <- function(target,n,N,inflationFactor,control,pval) {
   }
 
   for(ii in 1:length(control$limits)) {
-    if(control$normalApprox == TRUE) {
-      # standard error for approximations
-      stdErr0 <- sqrt(target*(1-target)*(1/n))
-      # distribution quantiles
-      zzlower <- stats::qnorm(control$limits[ii]/2)
-      zzupper <- stats::qnorm(1-(control$limits[ii]/2))
-      # control limits
-      lower[[ii]] <- target + zzlower*inflationFactor*stdErr0
-      upper[[ii]] <- target + zzupper*inflationFactor*stdErr0
-    } else if (control$normalApprox == FALSE) {
-      # continuity adjusted control limits
-      upper[[ii]] <- contAdjustBin(1-(control$limits[ii]/2),n,target)
-      lower[[ii]] <- contAdjustBin((control$limits[ii]/2),n,target)
-      # over-dispersion adjustment
-      upper[[ii]] <- target + inflationFactor*(upper[[ii]] - target)
-      lower[[ii]] <- target + inflationFactor*(lower[[ii]] - target)
+    if (control$standardised == TRUE) {
+      if (control$normalApprox == TRUE) {
+        # expected births
+        e0 <- n*target
+        stdErr0 <- sqrt(e0)
+        # distribution quantiles
+        zzlower <- stats::qnorm(control$limits[ii]/2)
+        zzupper <- stats::qnorm(1-(control$limits[ii]/2))
+        # control limits
+        lower[[ii]] <- 1 + zzlower*inflationFactor*stdErr0
+        upper[[ii]] <- 1 + zzupper*inflationFactor*stdErr0
+      } else if (control$normalApprox == FALSE) {
+        stop("only normal approx currently implemented for standardised rates")
+      }
+    } else if (control$standardised == FALSE) {
+      if (control$normalApprox == TRUE) {
+        # standard error for approximations
+        stdErr0 <- sqrt(target*(1-target)*(1/n))
+        # distribution quantiles
+        zzlower <- stats::qnorm(control$limits[ii]/2)
+        zzupper <- stats::qnorm(1-(control$limits[ii]/2))
+        # control limits
+        lower[[ii]] <- target + zzlower*inflationFactor*stdErr0
+        upper[[ii]] <- target + zzupper*inflationFactor*stdErr0
+      } else if (control$normalApprox == FALSE) {
+        # continuity adjusted control limits
+        upper[[ii]] <- contAdjustBin(1-(control$limits[ii]/2),n,target)
+        lower[[ii]] <- contAdjustBin((control$limits[ii]/2),n,target)
+        # over-dispersion adjustment
+        upper[[ii]] <- target + inflationFactor*(upper[[ii]] - target)
+        lower[[ii]] <- target + inflationFactor*(lower[[ii]] - target)
+      }
     }
   }
+
   upper <- data.frame(upper)
   names(upper) <- paste0("upper", limitChr)
   lower <- data.frame(lower)
@@ -272,6 +289,7 @@ groupOutcomes <- function(observed,expected,id,target=NULL) {
   prop_adj <- (obs_grpd/adj_grpd)*target  # standardised proportion
   data <- data.frame(id = levels(id), n = nn,
                         observed = obs_grpd, expected = adj_grpd,
+                        observed_expected = obs_grpd/expected,
                         prop_obs = prop_obs, prop_adj = prop_adj,
                         std_err0 = std_err0, row.names = NULL)
 
