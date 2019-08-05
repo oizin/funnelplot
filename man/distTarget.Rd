@@ -6,6 +6,9 @@
 \usage{
 distTarget(limits = 0.05, trim = 0)
 }
+\arguments{
+\item{trim}{the fraction (0 to 0.5) of observations to be trimmed from each end}
+}
 \description{
 Target is a distribution
 }

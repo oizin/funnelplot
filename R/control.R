@@ -5,6 +5,7 @@
 #' @param ctrlOverDisp
 #' @param trim the fraction (0 to 0.5) of observations to be trimmed from each end
 #' @param multAdj ...
+#' @param standardised ...
 #'
 #' @export
 pointTarget <- function(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE,

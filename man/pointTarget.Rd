@@ -5,12 +5,12 @@
 \title{Target is a point}
 \usage{
 pointTarget(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE,
-  trim = 0, multAdj = "none")
+  trim = 0, multAdj = "none", standardised = FALSE)
 }
 \arguments{
 \item{trim}{the fraction (0 to 0.5) of observations to be trimmed from each end}
 
-\item{multAdj}{}
+\item{multAdj}{...}
 }
 \description{
 Target is a point

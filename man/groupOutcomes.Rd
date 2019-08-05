@@ -13,7 +13,7 @@ groupOutcomes(observed, expected, id, target = NULL)
 
 \item{id}{institution identifier}
 
-\item{target}{institution target value}
+\item{target}{institution target value (a proportion)}
 }
 \description{
 Calculate proportion of

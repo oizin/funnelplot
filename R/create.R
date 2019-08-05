@@ -260,10 +260,10 @@ randomEffectLimits <- function(target,n,effectVar,control) {
 
 
 
-#' Calculate proportion of
+#' Calculate proportion of ???
 #'
-#' @param observed observed number of events
-#' @param expected expected number of events
+#' @param observed observed outcome (a vector)
+#' @param expected expected outcome (a vector)
 #' @param id institution identifier
 #' @inheritParams pointLimits
 #'
@@ -281,6 +281,7 @@ groupOutcomes <- function(observed,expected,id,target=NULL) {
   # outcome calculations by clinic
   nn <- tapply(observed, id, length)
   obs_grpd <- tapply(observed, id, sum)
+  exp_grpd <- tapply(expected, id, sum)
   prop_obs <- (obs_grpd/nn)
   std_err0 <- sqrt((target*(1-target))/nn)
 
@@ -289,7 +290,7 @@ groupOutcomes <- function(observed,expected,id,target=NULL) {
   prop_adj <- (obs_grpd/adj_grpd)*target  # standardised proportion
   data <- data.frame(id = levels(id), n = nn,
                         observed = obs_grpd, expected = adj_grpd,
-                        observed_expected = obs_grpd/expected,
+                        observed_expected = obs_grpd/exp_grpd,
                         prop_obs = prop_obs, prop_adj = prop_adj,
                         std_err0 = std_err0, row.names = NULL)
 

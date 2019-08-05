@@ -11,7 +11,7 @@ contAdjustBin(limit, n, target)
 
 \item{n}{precision values at which to calculate limit}
 
-\item{target}{institution target value}
+\item{target}{institution target value (a proportion)}
 }
 \description{
 Continuity adjusted binomial limits

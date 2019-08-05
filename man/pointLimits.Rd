@@ -7,7 +7,7 @@
 pointLimits(target, n, N, inflationFactor, control, pval)
 }
 \arguments{
-\item{target}{institution target value}
+\item{target}{institution target value (a proportion)}
 
 \item{n}{precision values at which to calculate limit}
 
