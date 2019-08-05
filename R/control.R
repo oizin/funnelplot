@@ -11,7 +11,7 @@
 pointTarget <- function(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE,
                         trim = 0, multAdj = "none", standardised = FALSE) {
   list(method = "point", limits = limits, normalApprox = normalApprox,
-       crtlOverDisp = crtlOverDisp, multAdj = multAdj, trim = trim)
+       crtlOverDisp = crtlOverDisp, multAdj = multAdj, trim = trim, standardised = standardised)
 }
 
 #' Target is a distribution
