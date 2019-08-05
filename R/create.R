@@ -187,7 +187,7 @@ pointLimits <- function(target,n,N,inflationFactor,control,pval) {
       if (control$normalApprox == TRUE) {
         # expected births
         e0 <- n*target
-        stdErr0 <- sqrt(e0)
+        stdErr0 <- sqrt(1/e0)
         # distribution quantiles
         zzlower <- stats::qnorm(control$limits[ii]/2)
         zzupper <- stats::qnorm(1-(control$limits[ii]/2))
