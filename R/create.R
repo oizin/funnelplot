@@ -52,9 +52,21 @@ dispersion.funnelData <- function(funnelData,trim=NULL) {
     effectVar = effectVar)
 }
 
-#' Create the funnel plot
+#' Check the input to funnelplot::funnel
 #'
-#' @param formula a two-sided formula y ~ x1 + x2 | group, if no covariates use y ~ 1 | group
+#' @param x formula for funnel
+check_formula <- function(x,var_names) {
+  tmp <- as.list(x)
+  tmp <- as.character(tmp[[3]])
+  vars_in_form <- trimws(unlist(strsplit(tmp[2],"+",fixed = TRUE)))
+  assertthat::assert_that(tmp[1] == "|")
+  assertthat::assert_that(vars_in_form == "1" | all(vars_in_form %in% var_names))
+}
+
+#' Perform risk adjusted institution comparison
+#'
+#' @param formula a two-sided formula. Either of the form y ~ x1 + x2 | group,
+#' or if no covariates use y ~ 1 | group
 #'
 #' @param target a list of values that define how the funnel plot should be constructed.
 #' See pointTarget and distTarget.
@@ -63,8 +75,16 @@ dispersion.funnelData <- function(funnelData,trim=NULL) {
 #' CHANGE normal_approx TO METHOD = "exact", "normal" AND SO ON!
 #' @export
 funnel <- function(formula, control=pointTarget(), data) {
-  ## checks
-  stopifnot(all.vars(formula) %in% c(names(data)))
+  ## checks on input args
+  # prelim
+  var_names <- all.vars(formula)
+  y_vals <- unique(data[[var_names[1]]])
+  # checks
+  assertthat::assert_that(is.data.frame(data))
+  assertthat::assert_that(class(formula) == "formula")
+  assertthat::assert_that(all(var_names %in% c(names(data))))
+  assertthat::assert_that(all(y_vals %in% c(0,1)))
+  assertthat::assert_that(check_formula(formula,var_names))
 
   ## edit formula
   sepFormula <- getFunnelFormula(formula)

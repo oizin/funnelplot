@@ -10,11 +10,11 @@
 \arguments{
 \item{funnelRes}{funnel plot object}
 
-\item{identify}{all}
+\item{identify}{show on plot. default = all}
 
-\item{label}{none}
+\item{label}{label on plot. default = none}
 
-\item{lengthOut}{500}
+\item{lengthOut}{resolution of control limits. Number of points sampled to construct limit lines. default = 500}
 }
 \description{
 plot funnel plot

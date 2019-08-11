@@ -2,12 +2,13 @@
 % Please edit documentation in R/create.R
 \name{funnel}
 \alias{funnel}
-\title{Create the funnel plot}
+\title{Perform risk adjusted institution comparison}
 \usage{
 funnel(formula, control = pointTarget(), data)
 }
 \arguments{
-\item{formula}{a two-sided formula y ~ x1 + x2 | group, if no covariates use y ~ 1 | group}
+\item{formula}{a two-sided formula. Either of the form y ~ x1 + x2 | group,
+or if no covariates use y ~ 1 | group}
 
 \item{data}{a data frame containing the variables named in formula
 
@@ -17,5 +18,5 @@ CHANGE normal_approx TO METHOD = "exact", "normal" AND SO ON!}
 See pointTarget and distTarget.}
 }
 \description{
-Create the funnel plot
+Perform risk adjusted institution comparison
 }

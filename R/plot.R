@@ -61,12 +61,17 @@ plotLimits.funnelRes <- function(funnelRes,lengthOut) {
 #' plot funnel plot
 #'
 #' @param funnelRes funnel plot object
-#' @param identify all
-#' @param label none
-#' @param lengthOut 500
+#' @param identify show on plot. default = all
+#' @param label label on plot. default = none
+#' @param lengthOut resolution of control limits. Number of points sampled to construct limit lines. default = 500
 #'
 #' @export
 plot.funnelRes <- function(funnelRes,identify="all",label="none",lengthOut=500,...) {
+  ## checks on input args
+  assertthat::assert_that(all(class(funnelRes) %in% c("list","funnelRes")))
+  assertthat::assert_that(identify %in% c("all","outliers",funnelRes$results$id))
+  assertthat::assert_that(label %in% c("outliers","none",funnelRes$results$id))
+  assertthat::assert_that(lengthOut > 0)
 
   # calculate control limits for plotting
   rngLimits  <- plotLimits(funnelRes,lengthOut=lengthOut)
@@ -97,7 +102,6 @@ plot.funnelRes <- function(funnelRes,identify="all",label="none",lengthOut=500,.
       labelData <- funnelRes$results[outlierRows,]
       pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y="prop_adj",label="id"),size=4)
     } else if(label[1] != "none") {
-      stopifnot(label %in% funnelRes$results$id)
       labelData <- funnelRes$results[funnelRes$results$id %in% label,]
       pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y="prop_adj",label="id"),size=4)
     }
@@ -113,7 +117,6 @@ plot.funnelRes <- function(funnelRes,identify="all",label="none",lengthOut=500,.
       labelData <- funnelRes$results[outlierRows,]
       pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y="observed_expected",label="id"),size=4)
     } else if(label[1] != "none") {
-      stopifnot(label %in% funnelRes$results$id)
       labelData <- funnelRes$results[funnelRes$results$id %in% label,]
       pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y="observed_expected",label="id"),size=4)
     }

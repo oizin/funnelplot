@@ -1,9 +1,19 @@
 # funnelplot
 
-Produce risk adjusted funnel plots with R. Very early version, not for general use.
+  <!-- badges: start -->
+  [![Travis build status](https://travis-ci.org/oizin/funnelplot.svg?branch=master)](https://travis-ci.org/oizin/funnelplot)
+  <!-- badges: end -->
+
+
+Produce risk adjusted funnel plots for binary data with R. Under development.
 
 ```{r}
-a = 4
+# install with 
+devtools::install_github("oizin/funnelplot")
+library(funnelplot)
+
+# vignettes
+vignette("funnelplot-intro")
 ```
 
 ## References
