@@ -2,6 +2,7 @@
 
   <!-- badges: start -->
   [![Travis build status](https://travis-ci.org/oizin/funnelplot.svg?branch=master)](https://travis-ci.org/oizin/funnelplot)
+  [![codecov](https://codecov.io/github/oizin/funnelplot/branch/master/graphs/badge.svg)](https://codecov.io/github/oizin/funnelplot)
   <!-- badges: end -->
 
 
