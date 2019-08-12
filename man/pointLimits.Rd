@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{pointLimits}
 \alias{pointLimits}
-\title{Calculate control limits for pointTarget method}
+\title{Calculate control limits}
 \usage{
 pointLimits(target, n, N, inflationFactor, control, pval)
 }
@@ -11,7 +11,7 @@ pointLimits(target, n, N, inflationFactor, control, pval)
 
 \item{n}{precision values at which to calculate limit}
 
-\item{N}{number of institutions}
+\item{N}{number of clusters (institutions)}
 
 \item{inflationFactor}{Unexplained variation}
 
@@ -20,5 +20,5 @@ pointLimits(target, n, N, inflationFactor, control, pval)
 \item{pval}{p-values for FDR calculations}
 }
 \description{
-Calculate control limits for pointTarget method
+Calculate the control limits for use in plotting and comparison of individual clusters (institutions) to a point target.
 }

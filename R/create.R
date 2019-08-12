@@ -5,12 +5,16 @@
 
 #' Dispersion parameters
 #'
+#' Calculate the inflation parameters for situations where overdispersion is present.
+#'
 #' @param funnelData funnel plot data
 #' @param trim winsorisation
 #'
 dispersion <- function(funnelData,trim=NULL) UseMethod("dispersion")
 
 #' Dispersion parameters
+#'
+#' Calculate the inflation parameters for situations where overdispersion is present.
 #'
 #' @param funnelData funnel plot data
 #' @param trim winsorisation
@@ -52,9 +56,13 @@ dispersion.funnelData <- function(funnelData,trim=NULL) {
     effectVar = effectVar)
 }
 
-#' Check the input to funnelplot::funnel
+#' Check the input to funnel
+#'
+#' Checks whether the input to the funnel function is correct.
 #'
 #' @param x formula for funnel
+#' @param var_names names of variables in dataset provided to funnel
+#'
 check_formula <- function(x,var_names) {
   tmp <- as.list(x)
   tmp <- as.character(tmp[[3]])
@@ -63,16 +71,16 @@ check_formula <- function(x,var_names) {
   assertthat::assert_that(vars_in_form == "1" | all(vars_in_form %in% var_names))
 }
 
-#' Perform risk adjusted institution comparison
+#' Table of results for risk adjusted funnel plots.
+#'
+#' Perform risk adjusted cluster (institution) comparison for the purpose of outlier discovery.
 #'
 #' @param formula a two-sided formula. Either of the form y ~ x1 + x2 | group,
 #' or if no covariates use y ~ 1 | group
-#'
-#' @param target a list of values that define how the funnel plot should be constructed.
-#' See pointTarget and distTarget.
 #' @param data a data frame containing the variables named in formula
+#' @param control a description of how the funnel plot target and control limits should be constructed. See the control functions
+#' pointTarget() and distTarget().
 #'
-#' CHANGE normal_approx TO METHOD = "exact", "normal" AND SO ON!
 #' @export
 funnel <- function(formula, control=pointTarget(), data) {
   ## checks on input args
@@ -171,21 +179,25 @@ funnel <- function(formula, control=pointTarget(), data) {
   out
 }
 
-#' Bonferroni multiplicity adjustment
+#' Bonferroni multiplicity adjustment.
+#'
+#' Adjusts control limits to correct for multiple comparisons to a target.
 #'
 #' @param limits alpha leves
 #' @param N number of tests
 #'
-bonferroni <- function(limits, N,...) {
+bonferroni <- function(limits, N) {
   new_limits <- limits/N
   new_limits
 }
 
-#' Calculate control limits for pointTarget method
+#' Calculate control limits
+#'
+#' Calculate the control limits for use in plotting and comparison of individual clusters (institutions) to a point target.
 #'
 #' @param target institution target value (a proportion)
 #' @param n precision values at which to calculate limit
-#' @param N number of institutions
+#' @param N number of clusters (institutions)
 #' @param inflationFactor Unexplained variation
 #' @param control description of task
 #' @param pval p-values for FDR calculations
@@ -247,10 +259,12 @@ pointLimits <- function(target,n,N,inflationFactor,control,pval) {
   out
 }
 
-#' Calculate ...
+#' Calculate control limits
 #'
-#' @param target institution mean distribution mean target value
-#' @param effectVar institution mean distribution variance
+#' Calculate the control limits for use in plotting and comparison of individual clusters (institutions) to a distribution target.
+#'
+#' @param target cluster (institution) mean distribution mean target value
+#' @param effectVar cluster (institution) mean distribution variance
 #' @inheritParams pointLimits
 #'
 randomEffectLimits <- function(target,n,effectVar,control) {
@@ -280,11 +294,13 @@ randomEffectLimits <- function(target,n,effectVar,control) {
 
 
 
-#' Calculate proportion of ???
+#' Calculate summary values per cluster
+#'
+#' Calculates summary measures of per cluster (institution) performance
 #'
 #' @param observed observed outcome (a vector)
 #' @param expected expected outcome (a vector)
-#' @param id institution identifier
+#' @param id cluster (institution) identifier
 #' @inheritParams pointLimits
 #'
 groupOutcomes <- function(observed,expected,id,target=NULL) {
@@ -326,8 +342,10 @@ groupOutcomes <- function(observed,expected,id,target=NULL) {
 
 #' Continuity adjusted binomial limits
 #'
-#' @param limit control limit
-#' @param n
+#' Adjust binomial distribution control limits for lack of continuity. See #4 of A.1.1 of Spiegelhalter (2005).
+#'
+#' @param limit a numeric vector containing the (1-limit)100\% values for the control limits.
+#' @param n number of clusters (institutions) being compared.
 #' @inheritParams pointLimits
 #'
 contAdjustBin <- function(limit, n, target) {
@@ -341,6 +359,8 @@ contAdjustBin <- function(limit, n, target) {
 
 #' Normal assuming hypothesis test on grouped data
 #'
+#' Compare institutions to a target using a normality assumption.
+#'
 #' @param obs observed
 #' @param exp null hypothesis
 #' @param stdErr standard error
@@ -353,8 +373,9 @@ normHypTest <- function(obs, exp, stdErr) {
 
 #' False discovery rate multiplicity adjustment
 #'
-#' @param limits
-#' @param pval
+#' Adjust control limits to correct for multiple comparisons to a target.
+#'
+#' @param limits a numeric vector containing the (1-limit)100\% values for the control limits.
 #' @inheritParams pointLimits
 #'
 fdr <- function(limits,N,pval) {

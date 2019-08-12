@@ -12,5 +12,5 @@
 \item{trim}{winsorisation}
 }
 \description{
-Dispersion parameters
+Calculate the inflation parameters for situations where overdispersion is present.
 }

@@ -5,16 +5,10 @@
 \title{Check arguments on pointTarget}
 \usage{
 check_pointTarget(x)
-
-check_pointTarget(x)
 }
 \arguments{
-\item{x}{pointTarget}
-
-\item{x}{distTarget}
+\item{x}{list created from call to pointTarget.}
 }
 \description{
-Check arguments on pointTarget
-
-Check arguments on distTarget
+Checks whether the arguments to pointTarget are correct.
 }

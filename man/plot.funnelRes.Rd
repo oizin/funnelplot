@@ -2,20 +2,22 @@
 % Please edit documentation in R/plot.R
 \name{plot.funnelRes}
 \alias{plot.funnelRes}
-\title{plot funnel plot}
+\title{Graph funnel plot}
 \usage{
-\method{plot}{funnelRes}(funnelRes, identify = "all", label = "none",
+\method{plot}{funnelRes}(x, identify = "all", label = "none",
   lengthOut = 500, ...)
 }
 \arguments{
-\item{funnelRes}{funnel plot object}
+\item{x}{funnel plot object}
 
 \item{identify}{show on plot. default = all}
 
 \item{label}{label on plot. default = none}
 
-\item{lengthOut}{resolution of control limits. Number of points sampled to construct limit lines. default = 500}
+\item{lengthOut}{resolution of control limits. Number of points sampled to construct limit lines. default = 500.}
+
+\item{...}{Other arguments to plot.funnelRes.}
 }
 \description{
-plot funnel plot
+Produces a funnel plot using ggplot2.
 }

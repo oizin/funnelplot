@@ -2,19 +2,19 @@
 % Please edit documentation in R/create.R
 \name{randomEffectLimits}
 \alias{randomEffectLimits}
-\title{Calculate ...}
+\title{Calculate control limits}
 \usage{
 randomEffectLimits(target, n, effectVar, control)
 }
 \arguments{
-\item{target}{institution mean distribution mean target value}
+\item{target}{cluster (institution) mean distribution mean target value}
 
 \item{n}{precision values at which to calculate limit}
 
-\item{effectVar}{institution mean distribution variance}
+\item{effectVar}{cluster (institution) mean distribution variance}
 
 \item{control}{description of task}
 }
 \description{
-Calculate ...
+Calculate the control limits for use in plotting and comparison of individual clusters (institutions) to a distribution target.
 }

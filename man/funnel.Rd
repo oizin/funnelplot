@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{funnel}
 \alias{funnel}
-\title{Perform risk adjusted institution comparison}
+\title{Table of results for risk adjusted funnel plots.}
 \usage{
 funnel(formula, control = pointTarget(), data)
 }
@@ -10,13 +10,11 @@ funnel(formula, control = pointTarget(), data)
 \item{formula}{a two-sided formula. Either of the form y ~ x1 + x2 | group,
 or if no covariates use y ~ 1 | group}
 
-\item{data}{a data frame containing the variables named in formula
+\item{control}{a description of how the funnel plot target and control limits should be constructed. See the control functions
+pointTarget() and distTarget().}
 
-CHANGE normal_approx TO METHOD = "exact", "normal" AND SO ON!}
-
-\item{target}{a list of values that define how the funnel plot should be constructed.
-See pointTarget and distTarget.}
+\item{data}{a data frame containing the variables named in formula}
 }
 \description{
-Perform risk adjusted institution comparison
+Perform risk adjusted cluster (institution) comparison for the purpose of outlier discovery.
 }

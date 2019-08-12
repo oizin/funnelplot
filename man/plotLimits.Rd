@@ -4,11 +4,13 @@
 \alias{plotLimits}
 \title{helper function for plotting the funnel plots}
 \usage{
-plotLimits(funnelRes, ...)
+plotLimits(funnelRes, lengthOut)
 }
 \arguments{
 \item{funnelRes}{funnel plot object}
+
+\item{lengthOut}{500}
 }
 \description{
-helper function for plotting the funnel plots
+Determines the position of the control limits at N values.
 }

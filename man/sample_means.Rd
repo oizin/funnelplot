@@ -6,6 +6,13 @@
 \usage{
 sample_means(N, mean, sd)
 }
+\arguments{
+\item{N}{number of clusters (institutions)}
+
+\item{mean}{mean of cluster (institution) mean distribution}
+
+\item{sd}{standard deviation of cluster (institution) mean distribution}
+}
 \description{
 Sample means
 }

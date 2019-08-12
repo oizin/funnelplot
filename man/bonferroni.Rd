@@ -2,9 +2,9 @@
 % Please edit documentation in R/create.R
 \name{bonferroni}
 \alias{bonferroni}
-\title{Bonferroni multiplicity adjustment}
+\title{Bonferroni multiplicity adjustment.}
 \usage{
-bonferroni(limits, N, ...)
+bonferroni(limits, N)
 }
 \arguments{
 \item{limits}{alpha leves}
@@ -12,5 +12,5 @@ bonferroni(limits, N, ...)
 \item{N}{number of tests}
 }
 \description{
-Bonferroni multiplicity adjustment
+Adjusts control limits to correct for multiple comparisons to a target.
 }

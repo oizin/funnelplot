@@ -16,4 +16,5 @@ Suggests:
 VignetteBuilder: knitr
 Imports: ggplot2,
   tidyr,
-  data.table
+  data.table,
+  assertthat

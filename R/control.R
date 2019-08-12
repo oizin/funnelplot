@@ -1,11 +1,14 @@
 #' Target is a point
 #'
-#' @param limits ...
-#' @param normalApprox ...
-#' @param ctrlOverDisp ...
-#' @param trim the fraction (0 to 0.5) of observations to be trimmed from each end
-#' @param multAdj ...
-#' @param standardised ...
+#' A description of how the funnel plot target and control limits should be constructed for a point target.
+#'
+#' @param limits a numeric vector containing the (1-limit)100\% values for the control limits.
+#' @param normalApprox a logical value indicating whether use a normal approximation.
+#' @param crtlOverDisp a logical value indicating whether to adjust control limits to account for overdispersion.
+#' @param trim the fraction (0 to 0.5) of observations to be trimmed from each end.
+#' @param multAdj a character indicating which method to use to multiplicity adjustment. Default = "none", other options are
+#' "fdr" and "bonferroni".
+#' @param standardised a logical value indicating whether standardise the per cluster outcome. For binary data this is y = observed/expected.
 #'
 #' @export
 pointTarget <- function(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE,
@@ -16,7 +19,10 @@ pointTarget <- function(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE
 
 #' Check arguments on pointTarget
 #'
-#' @param x pointTarget
+#' Checks whether the arguments to pointTarget are correct.
+#'
+#' @param x list created from call to pointTarget.
+#'
 check_pointTarget <- function(x) {
   assertthat::assert_that(all(x$limits > 0.0) & all(x$limits < 0.5))
   assertthat::assert_that(is.logical(x$normalApprox))
@@ -28,6 +34,8 @@ check_pointTarget <- function(x) {
 
 #' Target is a distribution
 #'
+#' A description of how the funnel plot target and control limits should be constructed for a distribution target.
+#'
 #' @inheritParams pointTarget
 #'
 #' @export
@@ -37,8 +45,11 @@ distTarget <- function(limits = 0.05, trim = 0) {
 
 #' Check arguments on distTarget
 #'
-#' @param x distTarget
-check_pointTarget <- function(x) {
+#' Checks whether the arguments to distTarget are correct.
+#'
+#' @param x list created from call to distTarget.
+#'
+check_distTarget <- function(x) {
   assertthat::assert_that(all(x$limits > 0.0) & all(x$limits < 0.5))
   assertthat::assert_that(x$trim >= 0.0 & x$trim < 0.5)
 }

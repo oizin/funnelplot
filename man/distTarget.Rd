@@ -7,10 +7,10 @@
 distTarget(limits = 0.05, trim = 0)
 }
 \arguments{
-\item{limits}{...}
+\item{limits}{a numeric vector containing the (1-limit)100\% values for the control limits.}
 
-\item{trim}{the fraction (0 to 0.5) of observations to be trimmed from each end}
+\item{trim}{the fraction (0 to 0.5) of observations to be trimmed from each end.}
 }
 \description{
-Target is a distribution
+A description of how the funnel plot target and control limits should be constructed for a distribution target.
 }

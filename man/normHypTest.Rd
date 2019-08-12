@@ -14,5 +14,5 @@ normHypTest(obs, exp, stdErr)
 \item{stdErr}{standard error}
 }
 \description{
-Normal assuming hypothesis test on grouped data
+Compare institutions to a target using a normality assumption.
 }

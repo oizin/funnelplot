@@ -4,14 +4,16 @@
 \alias{plot.fsim}
 \title{Plot the simulated data}
 \usage{
-\method{plot}{fsim}(sim, effect = "true", method = "dist")
+\method{plot}{fsim}(x, effect = "true", method = "dist", ...)
 }
 \arguments{
-\item{sim}{the simulation results}
+\item{x}{the simulation results}
 
-\item{effect}{true}
+\item{effect}{whether to plot the "true" or "estimated" cluster (institution) outcome value}
 
-\item{method}{dist}
+\item{method}{whether to assume a "point" or "distribution" target}
+
+\item{...}{other arguments to plot.fsim}
 }
 \description{
 Plot the simulated data

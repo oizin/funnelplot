@@ -6,6 +6,15 @@
 \usage{
 sample_nobs(N, n_min, n_max, sample_func)
 }
+\arguments{
+\item{N}{number of clusters (institutions)}
+
+\item{n_min}{limit on the number of observations within the smallest cluster (institution)}
+
+\item{n_max}{limit on the  of observations within the largest cluster (institution)}
+
+\item{sample_func}{function to sample jth cluster (institution) size in a form other than Unif(n_min,n_max)}
+}
 \description{
 Sample a certain number of observations
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/create.R
 \name{groupOutcomes}
 \alias{groupOutcomes}
-\title{Calculate proportion of ???}
+\title{Calculate summary values per cluster}
 \usage{
 groupOutcomes(observed, expected, id, target = NULL)
 }
@@ -11,10 +11,10 @@ groupOutcomes(observed, expected, id, target = NULL)
 
 \item{expected}{expected outcome (a vector)}
 
-\item{id}{institution identifier}
+\item{id}{cluster (institution) identifier}
 
 \item{target}{institution target value (a proportion)}
 }
 \description{
-Calculate proportion of ???
+Calculates summary measures of per cluster (institution) performance
 }

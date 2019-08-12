@@ -7,10 +7,12 @@
 fdr(limits, N, pval)
 }
 \arguments{
-\item{N}{number of institutions}
+\item{limits}{a numeric vector containing the (1-limit)100\% values for the control limits.}
+
+\item{N}{number of clusters (institutions)}
 
 \item{pval}{p-values for FDR calculations}
 }
 \description{
-False discovery rate multiplicity adjustment
+Adjust control limits to correct for multiple comparisons to a target.
 }

@@ -7,12 +7,12 @@
 contAdjustBin(limit, n, target)
 }
 \arguments{
-\item{limit}{control limit}
+\item{limit}{a numeric vector containing the (1-limit)100\% values for the control limits.}
 
-\item{n}{precision values at which to calculate limit}
+\item{n}{number of clusters (institutions) being compared.}
 
 \item{target}{institution target value (a proportion)}
 }
 \description{
-Continuity adjusted binomial limits
+Adjust binomial distribution control limits for lack of continuity. See #4 of A.1.1 of Spiegelhalter (2005).
 }

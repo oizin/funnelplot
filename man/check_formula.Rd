@@ -2,13 +2,15 @@
 % Please edit documentation in R/create.R
 \name{check_formula}
 \alias{check_formula}
-\title{Check the input to funnelplot::funnel}
+\title{Check the input to funnel}
 \usage{
 check_formula(x, var_names)
 }
 \arguments{
 \item{x}{formula for funnel}
+
+\item{var_names}{names of variables in dataset provided to funnel}
 }
 \description{
-Check the input to funnelplot::funnel
+Checks whether the input to the funnel function is correct.
 }

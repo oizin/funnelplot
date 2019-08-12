@@ -1,6 +1,13 @@
-#' edit funnel plot formula
+#########################################################################
+# Helper functions for creating funnel plots
+#
+#########################################################################
+
+#' Edit funnel plot formula
 #'
-#' @params formula
+#' Edit formula passed to funnel to enable call to stats::glm
+#'
+#' @param formula formula passed to funnel.
 #'
 getFunnelFormula <- function(formula) {
   vars <- all.vars(formula)

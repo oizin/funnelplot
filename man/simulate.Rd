@@ -7,17 +7,17 @@
 simulate(N, n_min, n_max, mean, sd, sample_func = NULL)
 }
 \arguments{
-\item{N}{number of institutions}
+\item{N}{number of clusters (institutions)}
 
-\item{n_min}{potential size of smallest institution}
+\item{n_min}{limit on the number of observations within the smallest cluster (institution)}
 
-\item{n_max}{potential size of largest institution}
+\item{n_max}{limit on the  of observations within the largest cluster (institution)}
 
-\item{mean}{mean of institution mean distribution}
+\item{mean}{mean of cluster (institution) mean distribution}
 
-\item{sd}{standard deviation of institution mean distribution}
+\item{sd}{standard deviation of cluster (institution) mean distribution}
 
-\item{sample_func}{function to sample institution size in a form other than Unif(n_min,n_max)}
+\item{sample_func}{function to sample jth cluster (institution) size in a form other than Unif(n_min,n_max)}
 }
 \description{
 Simulate data for a funnel plot

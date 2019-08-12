@@ -4,10 +4,12 @@
 \alias{print.funnelRes}
 \title{print function}
 \usage{
-\method{print}{funnelRes}(funnelRes)
+\method{print}{funnelRes}(x, ...)
 }
 \arguments{
-\item{funnelRes}{funnel plot object}
+\item{x}{funnel plot object.}
+
+\item{...}{other arguments to print.}
 }
 \description{
 print function

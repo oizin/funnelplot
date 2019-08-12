@@ -8,18 +8,19 @@ pointTarget(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE,
   trim = 0, multAdj = "none", standardised = FALSE)
 }
 \arguments{
-\item{limits}{...}
+\item{limits}{a numeric vector containing the (1-limit)100\% values for the control limits.}
 
-\item{normalApprox}{...}
+\item{normalApprox}{a logical value indicating whether use a normal approximation.}
 
-\item{trim}{the fraction (0 to 0.5) of observations to be trimmed from each end}
+\item{crtlOverDisp}{a logical value indicating whether to adjust control limits to account for overdispersion.}
 
-\item{multAdj}{...}
+\item{trim}{the fraction (0 to 0.5) of observations to be trimmed from each end.}
 
-\item{standardised}{...}
+\item{multAdj}{a character indicating which method to use to multiplicity adjustment. Default = "none", other options are
+"fdr" and "bonferroni".}
 
-\item{ctrlOverDisp}{...}
+\item{standardised}{a logical value indicating whether standardise the per cluster outcome. For binary data this is y = observed/expected.}
 }
 \description{
-Target is a point
+A description of how the funnel plot target and control limits should be constructed for a point target.
 }

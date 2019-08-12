@@ -7,7 +7,7 @@
 eg_sample_func(n)
 }
 \arguments{
-\item{n}{number of sample to take}
+\item{n}{number of samples to take}
 }
 \description{
 Example sampling function for simulate
