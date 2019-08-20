@@ -13,8 +13,10 @@
 #' @export
 pointTarget <- function(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE,
                         trim = 0, multAdj = "none", standardised = FALSE) {
-  list(method = "point", limits = limits, normalApprox = normalApprox,
+  out <- list(method = "point", limits = limits, normalApprox = normalApprox,
        crtlOverDisp = crtlOverDisp, multAdj = multAdj, trim = trim, standardised = standardised)
+  assertthat::assert_that(check_pointTarget(out))
+  out
 }
 
 #' Check arguments on pointTarget
@@ -39,8 +41,11 @@ check_pointTarget <- function(x) {
 #' @inheritParams pointTarget
 #'
 #' @export
-distTarget <- function(limits = 0.05, trim = 0) {
-  list(method = "distribution", limits = limits, trim = trim)
+distTarget <- function(limits = 0.05, trim = 0, standardised = FALSE) {
+  out <- list(method = "distribution", limits = limits, trim = trim, standardised = standardised)
+  assertthat::assert_that(check_distTarget(out))
+  out
+
 }
 
 #' Check arguments on distTarget

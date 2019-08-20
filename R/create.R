@@ -165,6 +165,7 @@ funnel <- function(formula, control=pointTarget(), data) {
                                      control)
     lower <- ctrlLimits$lower
     upper <- ctrlLimits$upper
+    hypTestRes <- rep(NA,nrow(funnelData$data))
   }
 
   # determine clinics inside/outside limits

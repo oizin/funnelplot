@@ -31,4 +31,14 @@ test_that("formula works for types y ~ x1^2", {
   expect_type(funnel(y~ x1^2 + splines::bs(x2) |unit,data=df4),"list")
 })
 
+test_that("check distTarget and pointTarget functions", {
+  expect_type(funnel(y~ x1 + x2|unit,control = distTarget(),data=df4),"list")
+  expect_type(funnel(y~ x1 + x2|unit,control = pointTarget(crtlOverDisp = TRUE),data=df4),"list")
+  expect_type(funnel(y~ x1 + x2|unit,control = pointTarget(crtlOverDisp = TRUE, standardised = TRUE),data=df4),"list")
+  expect_error(funnel(y~ x1 + x2|unit,control = pointTarget(multAdj = "bf"),data=df4))
+  expect_error(funnel(y~ x1 + x2|unit,control = pointTarget(trim = 1.0),data=df4))
+  expect_error(funnel(y~ x1 + x2|unit,control = distTarget(trim = 1.0),data=df4))
+  expect_error(funnel(y~ x1 + x2|unit,control = distTarget(limits = 0.0),data=df4))
+})
+
 
