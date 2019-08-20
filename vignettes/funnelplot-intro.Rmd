@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-Funnel plots are designed for comparisons of institutional performance (e.g. hospital mortality rates), for the purpose of outlier discovery. They graph institution performance y (on a metric of interest) against institution size n. Control limits are then overlayed, designed to capture (1-$\alpha$)100% of institutions (typically 95% and 99.7% - 2 and 3 standard deviations), from a target value (e.g. the global average) for the metric. The "funnel" shape comes from the expectation that with increasing institution size there will be less variation around the target, leading to narrower control limits as n grows. For an excellent introduction see Spiegelhalter (2005).
+Funnel plots are designed for comparisons of institutional performance (e.g. hospital mortality rates or store sales), for the purpose of outlier discovery. They graph institution performance y (on a metric of interest) against institution size n. Control limits are then overlayed, designed to capture (1-$\alpha$)100% of institutions (typically 95% and 99.7% - 2 and 3 standard deviations), from a target value (e.g. the global average) for the metric. The "funnel" shape comes from the expectation that with increasing institution size there will be less variation around the target, leading to narrower control limits as n grows. For an excellent introduction see Spiegelhalter (2005).
 
 ```{r setup}
 library(funnelplot)
