@@ -1,16 +1,26 @@
-#' Casemix adjustment
+#########################################################################
+# Funnel plot functions
+# - How good is the case mix adjustment?
+#########################################################################
+
+
+#' Evaluate ability of casemix adjustment variables to predict outcome
 #'
-#' @param funnelRes funnel plot object
-#' @param method cross-validation
-#' @param folds 10
+#' @param funnelRes a funnel plot object
+#' @param method "cv" for cross-validation
+#' @param folds an integer (>= 2) indicating the number of cross validation folds
+#'
+#' @section Note
+#' Current implementation is for test purposes and may change substantially.
 #'
 #' @export
-evalCasemixAdj <- function(funnelRes,method="cv",folds=10) {
+evalCasemixAdj <- function(funnelRes,method="cv",folds=5L) {
 
   # checks
   assertthat::assert_that(method == "cv",msg = "only cross validation currently supported")
   assertthat::assert_that(is.numeric(folds))
   assertthat::assert_that("funnelRes" %in% class(funnelRes))
+  assertthat::assert_that(nrow(funnelRes$data)/folds > 2)
 
   ## edit formula
   sepFormula <- getFunnelFormula(funnelRes$formula)
@@ -47,7 +57,6 @@ evalCasemixAdj <- function(funnelRes,method="cv",folds=10) {
     accuracy <- numeric(length(cv_folds))
     pseudoR2 <- numeric(length(cv_folds))
     auc_roc <- numeric(length(cv_folds))
-    auc_pr <- numeric(length(cv_folds))
 
     for(fold in 1:length(cv_folds)) {
       # fit null model
@@ -67,7 +76,6 @@ evalCasemixAdj <- function(funnelRes,method="cv",folds=10) {
       accuracy[fold] <- accuracy(binary_pred,true_out)
       pseudoR2[fold] <- 1-(stats::logLik(adj_mod_i)/stats::logLik(null_mod_i))
       auc_roc[fold] <- auc_roc(predict_out,true_out)
-      auc_pr[fold] <- auc_pr(predict_out,true_out)
     }
   }
 
@@ -75,14 +83,13 @@ evalCasemixAdj <- function(funnelRes,method="cv",folds=10) {
   outcome <- funnelRes$data[[outcomeVar]]
   no_info_rate <- max(mean(outcome),1-mean(outcome))
 
-  # no information brier
-  no_info_brier <- mean((mean(outcome) - outcome)^2)
-
-  # outcomes
-  list(no_info_brier = no_info_brier, brier = mean(brier),
-       no_info_rate = no_info_rate,
-       accuracy = mean(accuracy), pseudoR2 = mean(pseudoR2),
-       auc_roc = mean(auc_roc), auc_pr = mean(auc_pr))
+  # return
+  data.frame(run = c(1:folds,"overall"),
+             brier = c(brier,mean(brier)),
+             accuracy = c(accuracy,mean(accuracy)),
+             pseudoR2 = c(pseudoR2,mean(pseudoR2)),
+             auc_roc = c(auc_roc,mean(auc_roc)),
+             no_info_rate = c(rep(NA,folds),no_info_rate))
 }
 
 

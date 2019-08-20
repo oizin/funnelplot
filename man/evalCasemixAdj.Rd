@@ -2,17 +2,17 @@
 % Please edit documentation in R/evaluate.R
 \name{evalCasemixAdj}
 \alias{evalCasemixAdj}
-\title{Casemix adjustment}
+\title{Evaluate ability of casemix adjustment variables to predict outcome}
 \usage{
-evalCasemixAdj(funnelRes, method = "cv", folds = 10)
+evalCasemixAdj(funnelRes, method = "cv", folds = 5L)
 }
 \arguments{
-\item{funnelRes}{funnel plot object}
+\item{funnelRes}{a funnel plot object}
 
-\item{method}{cross-validation}
+\item{method}{"cv" for cross-validation}
 
-\item{folds}{10}
+\item{folds}{an integer (>= 2) indicating the number of cross validation folds}
 }
 \description{
-Casemix adjustment
+Evaluate ability of casemix adjustment variables to predict outcome
 }

@@ -1,7 +1,7 @@
 Package: funnelplot
 Type: Package
 Title: Create Funnel Plots
-Version: 0.1.2
+Version: 0.1.3
 Author: Oisin Fitzgerald
 Maintainer: Oisin Fitzgerald <fitzgeraldoisin@gmail.com>
 Description: Funnel plots for comparison of institutional performance.
@@ -12,9 +12,8 @@ RoxygenNote: 6.1.1
 Suggests: 
     knitr,
     rmarkdown,
-    testthat
+    testthat (>= 2.1.0)
 VignetteBuilder: knitr
 Imports: ggplot2,
   tidyr,
-  data.table,
   assertthat

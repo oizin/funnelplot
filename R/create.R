@@ -1,6 +1,6 @@
 #########################################################################
 # Funnel plot functions
-#
+# - Create the data for a funnel plot
 #########################################################################
 
 #' Dispersion parameters
@@ -95,7 +95,7 @@ check_formula <- function(x,var_names) {
 #' @section Author(s):
 #' The package is based on Spiegelhalter (2005) and Jones, Ohlssen & Spiegelhalter (2008). All errors in implementation and are the responsibility of the package authors (Oisin Fitzgerald).
 #'
-#' @section References:
+#' @section References
 #' Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. Journal of the royal statistical society. Series B (Methodological), 289-300.
 #'
 #' Spiegelhalter, D. J. (2005). Funnel plots for comparing institutional performance. Statistics in medicine, 24(8), 1185-1202.

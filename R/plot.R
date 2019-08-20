@@ -1,12 +1,19 @@
+#########################################################################
+# Funnel plot functions
+# - Plot a funnel plot
+#########################################################################
 
 #' helper function for plotting the funnel plots
 #'
 #' Determines the position of the control limits at N values.
 #'
 #' @param funnelRes funnel plot object
-#' @param lengthOut 500
+#' @param lengthOut resolution of control limits. Number of points sampled to construct limit lines. default = 500.
 #'
 plotLimits <- function(funnelRes,lengthOut) {
+  ## checks on input args
+  assertthat::assert_that(all(class(funnelRes) %in% c("list","funnelRes")))
+  assertthat::assert_that(is.integer(lengthOut))
 
   # limits
   mn <- min(funnelRes$results$n)
@@ -65,12 +72,14 @@ plotLimits <- function(funnelRes,lengthOut) {
 #' @param ... Other arguments to plot.funnelRes.
 #'
 #' @export
-plot.funnelRes <- function(x,identify="all",label="none",lengthOut=500,...) {
+plot.funnelRes <- function(x,identify="all",label="none",lengthOut=500L,...) {
   ## checks on input args
   assertthat::assert_that(all(class(x) %in% c("list","funnelRes")))
   assertthat::assert_that(identify %in% c("all","outliers",x$results$id))
   assertthat::assert_that(label %in% c("outliers","none",x$results$id))
+  assertthat::assert_that(is.integer(lengthOut))
   assertthat::assert_that(lengthOut > 0)
+  assertthat::assert_that(length(unique(x$results$n)) > 1)
 
   # calculate control limits for plotting
   rngLimits  <- plotLimits(x,lengthOut=lengthOut)

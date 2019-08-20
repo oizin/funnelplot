@@ -5,7 +5,7 @@
 \title{Graph funnel plot}
 \usage{
 \method{plot}{funnelRes}(x, identify = "all", label = "none",
-  lengthOut = 500, ...)
+  lengthOut = 500L, ...)
 }
 \arguments{
 \item{x}{funnel plot object}

@@ -9,7 +9,7 @@ plotLimits(funnelRes, lengthOut)
 \arguments{
 \item{funnelRes}{funnel plot object}
 
-\item{lengthOut}{500}
+\item{lengthOut}{resolution of control limits. Number of points sampled to construct limit lines. default = 500.}
 }
 \description{
 Determines the position of the control limits at N values.
