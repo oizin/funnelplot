@@ -67,8 +67,12 @@ check_formula <- function(x,var_names) {
   tmp <- as.list(x)
   tmp <- as.character(tmp[[3]])
   vars_in_form <- trimws(unlist(strsplit(tmp[2],"+",fixed = TRUE)))
-  assertthat::assert_that(tmp[1] == "|")
-  assertthat::assert_that(vars_in_form == "1" | all(vars_in_form %in% var_names))
+  if (all(vars_in_form != "1")) {
+    assertthat::assert_that(length(all.vars(x)) >= 3,msg = "formula must be of the form `y ~ covariates | cluster` or `y ~ 1 | cluster`")
+    assertthat::assert_that(tmp[1] == "|" & all(all.vars(x) %in% var_names),msg = "formula must be of the form y ~ covariates | cluster or y ~ 1 | cluster")
+  } else {
+    assertthat::assert_that(tmp[1] == "|" & all(vars_in_form == "1"),msg = "formula must be of the form y ~ covariates | cluster or y ~ 1 | cluster")
+  }
 }
 
 #' Table of results for risk adjusted funnel plots.
@@ -111,9 +115,8 @@ funnel <- function(formula, control=pointTarget(), data) {
   # checks
   assertthat::assert_that(is.data.frame(data))
   assertthat::assert_that(class(formula) == "formula")
-  assertthat::assert_that(all(var_names %in% c(names(data))))
   assertthat::assert_that(all(y_vals %in% c(0,1)))
-  assertthat::assert_that(check_formula(formula,var_names))
+  assertthat::assert_that(check_formula(formula,names(data)))
 
   ## edit formula
   sepFormula <- getFunnelFormula(formula)

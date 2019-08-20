@@ -10,12 +10,14 @@
 #' @param formula formula passed to funnel.
 #'
 getFunnelFormula <- function(formula) {
+  tmp <- as.list(formula)
+  tmp <- gsub(" "," ",tmp[[3]])[2]
   vars <- all.vars(formula)
   p <- length(vars)
   nullForm <- paste(vars[1],"1",sep = "~")
   if(p > 2) {
     covar <- paste0(vars[2:(p-1)],collapse = "+")
-    newForm <- paste(vars[1],covar,sep = "~")
+    newForm <- paste(vars[1],tmp,sep = "~")
   } else {
     newForm <- nullForm
   }
@@ -24,3 +26,8 @@ getFunnelFormula <- function(formula) {
        outcome = vars[1],
        id = vars[p])
 }
+
+
+getFunnelFormula(y~1+2|unit)
+
+formula = y~1+2|unit

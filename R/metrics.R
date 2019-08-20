@@ -19,7 +19,6 @@ classify <- function(prob, cutoff = 0.5) {
 #' @param pred prediction (binary)
 #' @param truth observed value
 #'
-#'
 confusion <- function(pred,truth) {
   labelled <- rep("TN",length(pred))
   labelled[(pred == truth) & (truth == 1)] <- "TP"
