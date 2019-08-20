@@ -19,3 +19,13 @@ outliers <- function(funnelRes) {
 print.funnelRes <- function(x,...) {
   print(format(x$results, digits=3))
 }
+
+#' summary function
+#'
+#' @param object funnel plot object.
+#' @param ... other arguments to print.
+#'
+#' @export
+summary.funnelRes <- function(object,...) {
+  print(format(object$results, digits=3))
+}

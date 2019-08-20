@@ -88,37 +88,28 @@ plot.funnelRes <- function(x,identify="all",label="none",lengthOut=500,...) {
     stopifnot(identify %in% x$results$id)
     x$results <- x$results[x$results$id %in% identify,]
   }
-  # the plot
+  # what to plot
   if (x$control$standardised == FALSE) {
-    pp <- ggplot2::ggplot(data=x$results,ggplot2::aes_string(x="n",y="prop_adj")) +
-      ggplot2::geom_point() +
-      ggplot2::geom_hline(yintercept = x$target) +
-      ggplot2::geom_line(data=rngLimits,
-                         ggplot2::aes_string(x="n",y="value",group="limit",col="limit_id"))
-    if(label[1] == "outliers") {
-      outlierVars <- names(x$results)[grep(pattern = "inside",x = names(x$results))]
-      outlierRows <- (rowSums(!x$results[,outlierVars,drop=FALSE]) >= 1)
-      labelData <- x$results[outlierRows,]
-      pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y="prop_adj",label="id"),size=4)
-    } else if(label[1] != "none") {
-      labelData <- x$results[x$results$id %in% label,]
-      pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y="prop_adj",label="id"),size=4)
-    }
+    outcome <- "prop_adj"
+    yintercept <- x$target
   } else if (x$control$standardised == TRUE) {
-    pp <- ggplot2::ggplot(data=x$results,ggplot2::aes_string(x="n",y="observed_expected")) +
-      ggplot2::geom_point() +
-      ggplot2::geom_hline(yintercept = 1) +
-      ggplot2::geom_line(data=rngLimits,
-                         ggplot2::aes_string(x="n",y="value",group="limit",col="limit_id"))
-    if(label[1] == "outliers") {
-      outlierVars <- names(x$results)[grep(pattern = "inside",x = names(x$results))]
-      outlierRows <- (rowSums(!x$results[,outlierVars,drop=FALSE]) >= 1)
-      labelData <- x$results[outlierRows,]
-      pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y="observed_expected",label="id"),size=4)
-    } else if(label[1] != "none") {
-      labelData <- x$results[x$results$id %in% label,]
-      pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y="observed_expected",label="id"),size=4)
-    }
+    outcome <- "observed_expected"
+    yintercept <- 1
+  }
+  # the plot
+  pp <- ggplot2::ggplot(data=x$results,ggplot2::aes_string(x="n",y=outcome)) +
+    ggplot2::geom_point() +
+    ggplot2::geom_hline(yintercept = yintercept) +
+    ggplot2::geom_line(data=rngLimits,
+                       ggplot2::aes_string(x="n",y="value",group="limit",col="limit_id"))
+  if(label[1] == "outliers") {
+    outlierVars <- names(x$results)[grep(pattern = "inside",x = names(x$results))]
+    outlierRows <- (rowSums(!x$results[,outlierVars,drop=FALSE]) >= 1)
+    labelData <- x$results[outlierRows,]
+    pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y=outcome,label="id"),size=4)
+  } else if(label[1] != "none") {
+    labelData <- x$results[x$results$id %in% label,]
+    pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y=outcome,label="id"),size=4)
   }
   pp
 }

@@ -7,7 +7,7 @@
 bonferroni(limits, N)
 }
 \arguments{
-\item{limits}{alpha leves}
+\item{limits}{alpha levels}
 
 \item{N}{number of tests}
 }

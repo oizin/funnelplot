@@ -81,6 +81,27 @@ check_formula <- function(x,var_names) {
 #' @param control a description of how the funnel plot target and control limits should be constructed. See the control functions
 #' pointTarget() and distTarget().
 #'
+#' @return funnel returns an object of class "funnelRes". The functions \code{outliers} and \{plot} are used to obtain a summary of the
+#' outlying clusters (institutions) and produce a funnel plot.\cr
+#' An object of class "funnelRes" is a list containing at least the following components:\cr
+#'
+#'  \itemize{
+#'  \item{\code{results}:}{ a data frame with each row summarising the performance of a cluster (institution) on the metric of interest}
+#'  \item{\code{dispersion}:}{ the dispersion statistic and p-value, and over-inflation factor (on the standard error scale)}
+#'  \item{\code{target}:}{ the average value of the performance metric in the population}
+#' }
+#'
+#'
+#' @section Author(s):
+#' The package is based on Spiegelhalter (2005) and Jones, Ohlssen & Spiegelhalter (2008). All errors in implementation and are the responsibility of the package authors (Oisin Fitzgerald).
+#'
+#' @section References:
+#' Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. Journal of the royal statistical society. Series B (Methodological), 289-300.
+#'
+#' Spiegelhalter, D. J. (2005). Funnel plots for comparing institutional performance. Statistics in medicine, 24(8), 1185-1202.
+#'
+#' Jones, H. E., Ohlssen, D. I., & Spiegelhalter, D. J. (2008). Use of the false discovery rate when comparing multiple health care providers. Journal of clinical epidemiology, 61(3), 232-240.
+#'
 #' @export
 funnel <- function(formula, control=pointTarget(), data) {
   ## checks on input args
@@ -123,7 +144,7 @@ funnel <- function(formula, control=pointTarget(), data) {
     }
     hypTestRes <- normHypTest(obs = funnelData$data$prop_adj,
                               exp = funnelData$target,
-                              stdErr = funnelData$data$std_err0)
+                              stdErr = inflationFactor*funnelData$data$std_err0)
     ctrlLimits <- pointLimits(target=funnelData$target,
                               n=funnelData$data$n,
                               N=nrow(funnelData$data),
@@ -183,7 +204,7 @@ funnel <- function(formula, control=pointTarget(), data) {
 #'
 #' Adjusts control limits to correct for multiple comparisons to a target.
 #'
-#' @param limits alpha leves
+#' @param limits alpha levels
 #' @param N number of tests
 #'
 bonferroni <- function(limits, N) {

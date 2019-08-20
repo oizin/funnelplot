@@ -7,12 +7,10 @@
 \format{A data frame with 20445 rows and 7 variables:
 \describe{
   \item{hosp_id}{cluster ID}
-  \item{s0}{remove}
-  \item{n}{remove}
   \item{patient_id}{observation ID}
-  \item{var}{variable - rename}
+  \item{gender}{patient gender (0:male, 1:female)}
   \item{age}{age of patient (standardised)}
-  \item{test}{outcome variable: whether a test was performed}
+  \item{test}{outcome variable: whether a procedure was successful}
 }}
 \usage{
 example_data

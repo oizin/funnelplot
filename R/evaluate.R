@@ -7,6 +7,11 @@
 #' @export
 evalCasemixAdj <- function(funnelRes,method="cv",folds=10) {
 
+  # checks
+  assertthat::assert_that(method == "cv",msg = "only cross validation currently supported")
+  assertthat::assert_that(is.numeric(folds))
+  assertthat::assert_that("funnelRes" %in% class(funnelRes))
+
   ## edit formula
   sepFormula <- getFunnelFormula(funnelRes$formula)
   idVar <- sepFormula$id

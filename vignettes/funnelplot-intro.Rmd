@@ -23,7 +23,7 @@ library(funnelplot)
 library(ggplot2)
 ```
 
-To illustrate the funnelplot package, we will use a synthetic example dataset of XX hospitals. The binary outcome measure is whether a particular test was performed on the ith patient. We have two variables A and B that are distributed unevenly across the hospitals and may play a role in explaining differences in the observed hostpial testing rate y = sum test / n.
+To illustrate the funnelplot package, we will use a synthetic example dataset of 40 hospitals. The binary outcome measure is whether a particular procedure was successful on the ith patient. We have two variables gender and age that may be distributed unevenly across the hospitals and play a role in explaining differences in the observed hospital success rate y = sum test / n.
 
 ```{r}
 data("example_data", package = "funnelplot")
@@ -60,7 +60,7 @@ outliers(f1)
 Generally raw comparison of event rates between institutions runs the risk of failing to account for differences in the populations between each cluster (e.g. a tendency for sicker patients to attend a particular hospital). To account for this a statistical model can be used to estimated hat{y} for each observation in the data - the predicted outcome given the observed covariates - which can be compared to the observed outcome y to obtain standardised rates per institution. Currently funnelplot uses logistic regression `stats::glm` for risk adjustment. A standard R formula of the form `outcome ~ covariates | clusterID` creates a risk adjusted funnel plot object. 
 
 ```{r}
-f2 <- funnel(test ~ var | hosp_id, data = example_data)
+f2 <- funnel(test ~ gender | hosp_id, data = example_data)
 plot(f2)
 ```
 
@@ -69,7 +69,7 @@ plot(f2)
 funnelplot can ... through the `pointTarget` function, that is passed to the control argument. Using `pointTarget` we can also pass an arbitrary number of control limits to funnel. In comparison to the above plots we now see that ... 
 
 ```{r}
-f3 <- funnel(test ~ var | hosp_id, data = example_data)
+f3 <- funnel(test ~ gender | hosp_id, data = example_data)
 plot(f3)
 ```
 
@@ -78,7 +78,7 @@ plot(f3)
 By default funnelplot produces risk adjusted rates, but in many circumstances standardised rates (of the form observed/expected) will be of more interest.
 
 ```{r}
-f4 <- funnel(test ~ var | hosp_id, data = example_data)
+f4 <- funnel(test ~ gender | hosp_id, data = example_data)
 plot(f4)
 ```
 
