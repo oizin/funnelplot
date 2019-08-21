@@ -1,0 +1,52 @@
+---
+title: "simulations"
+author: "Oisin Fitzgerald"
+date: "21/08/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Error rates for various multiplicity controls
+
+```{r}
+library(funnelplot)
+library(ggplot2)
+```
+
+```{r}
+M <- 100
+res1 <- replicate(M, {
+  N <- 100
+  xx <- generate_example(N,100,1000,0.4)
+  ff <- funnel(y~1|id,control = pointTarget(limits = 0.05),data=xx)
+  not_outlier <- sum(ff$results$inside95)/N
+})
+summary(res1)
+```
+
+```{r}
+M <- 100
+res2 <- replicate(M, {
+  N <- 100
+  xx <- generate_example(N,100,1000,0.4)
+  ff <- funnel(y~1|id,control = pointTarget(limits = 0.05,standardised = TRUE),data=xx)
+  not_outlier <- sum(ff$results$inside95)/N
+})
+summary(res2)
+```
+
+```{r}
+M <- 100
+res2 <- replicate(M, {
+  N <- 100
+  xx <- generate_example(N,100,1000,0.4)
+  ff <- funnel(y~1|id,
+    control = pointTarget(limits = 0.05,multAdj = "bonferroni"),
+    data=xx)
+  not_outlier <- sum(ff$results$inside95)/N
+})
+summary(res2)
+```

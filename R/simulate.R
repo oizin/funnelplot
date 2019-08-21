@@ -63,7 +63,7 @@ generate_example <- function(N, n_min, n_max, mean, sd = 0, sample_func = NULL) 
   # observation level data
   dij <- unlist(lapply(d_i,function(x) rep(0,x)))
   mij <- unlist(lapply(m_i,function(x) rep(1,x)))
-  out <- data.frame(id = c(rep(1:N,each=d_i),rep(1:N,each=m_i)),
+  out <- data.frame(id = c(rep(1:N,times=d_i),rep(1:N,times=m_i)),
              y = c(dij,mij))
   out
 }

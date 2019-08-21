@@ -9,7 +9,7 @@ randomEffectLimits(target, n, effectVar, control)
 \arguments{
 \item{target}{cluster (institution) mean distribution mean target value}
 
-\item{n}{precision values at which to calculate limit}
+\item{n}{precision values at which to calculate limit (vector)}
 
 \item{effectVar}{cluster (institution) mean distribution variance}
 

@@ -15,6 +15,7 @@ test_that("outcome variable shold be binary only", {
   expect_type(funnel(y~1|unit,data=df1),"list")
   expect_error(funnel(y~1|unit,data=df2))
   expect_error(funnel(y~1|unit,data=df3))
+  expect_error(funnel(y~.|unit,data=df1))
 })
 
 test_that("formula is y~1|unit or y~covariates|unit", {

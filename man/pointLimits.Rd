@@ -9,7 +9,7 @@ pointLimits(target, n, N, inflationFactor, control, pval)
 \arguments{
 \item{target}{institution target value (a proportion)}
 
-\item{n}{precision values at which to calculate limit}
+\item{n}{precision values at which to calculate limit (vector)}
 
 \item{N}{number of clusters (institutions)}
 

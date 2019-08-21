@@ -4,12 +4,14 @@
 \alias{bonferroni}
 \title{Bonferroni multiplicity adjustment.}
 \usage{
-bonferroni(limits, N)
+bonferroni(limits, N, ...)
 }
 \arguments{
 \item{limits}{alpha levels}
 
 \item{N}{number of tests}
+
+\item{...}{additional args}
 }
 \description{
 Adjusts control limits to correct for multiple comparisons to a target.

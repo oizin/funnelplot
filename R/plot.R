@@ -87,6 +87,7 @@ plot.funnelRes <- function(x,identify="all",label="none",lengthOut=500L,...) {
   # long form
   rngLimits <- data.table::melt(data.table::setDT(rngLimits),
                                   id.vars = c("n"), variable.name = "limit")
+  #rngLimits$expected <- rngLimits$n*x$target
   rngLimits$limit_id <- paste0("ctrl_",sub("[a-z]*_","",rngLimits$limit))
 
   if(identify[1] == "outliers") {
@@ -101,16 +102,20 @@ plot.funnelRes <- function(x,identify="all",label="none",lengthOut=500L,...) {
   if (x$control$standardised == FALSE) {
     outcome <- "prop_adj"
     yintercept <- x$target
+    precision <- "n"
   } else if (x$control$standardised == TRUE) {
     outcome <- "observed_expected"
     yintercept <- 1
+    precision <- "n"
+    #precision <- "expected"
   }
   # the plot
-  pp <- ggplot2::ggplot(data=x$results,ggplot2::aes_string(x="n",y=outcome)) +
+  pp <- ggplot2::ggplot(data=x$results,ggplot2::aes_string(x=precision,y=outcome)) +
     ggplot2::geom_point() +
     ggplot2::geom_hline(yintercept = yintercept) +
     ggplot2::geom_line(data=rngLimits,
-                       ggplot2::aes_string(x="n",y="value",group="limit",col="limit_id"))
+                       ggplot2::aes_string(x=precision,y="value",
+                         group="limit",col="limit_id"))
   if(label[1] == "outliers") {
     outlierVars <- names(x$results)[grep(pattern = "inside",x = names(x$results))]
     outlierRows <- (rowSums(!x$results[,outlierVars,drop=FALSE]) >= 1)
@@ -118,7 +123,8 @@ plot.funnelRes <- function(x,identify="all",label="none",lengthOut=500L,...) {
     pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y=outcome,label="id"),size=4)
   } else if(label[1] != "none") {
     labelData <- x$results[x$results$id %in% label,]
-    pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x="n",y=outcome,label="id"),size=4)
+    pp <- pp + ggplot2::geom_text(data=labelData,ggplot2::aes_string(x=precision,
+      y=outcome,label="id"),size=4)
   }
   pp
 }

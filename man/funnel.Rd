@@ -20,6 +20,6 @@ Perform risk adjusted cluster (institution) comparison for the purpose of outlie
 }
 \section{Author(s)}{
 
-The package is based on Spiegelhalter (2005) and Jones, Ohlssen & Spiegelhalter (2008). All errors in implementation and are the responsibility of the package authors (Oisin Fitzgerald).
+The package is based on Spiegelhalter (2005) and Jones, Ohlssen & Spiegelhalter (2008). All errors in implementation and are the responsibility of the package author (Oisin Fitzgerald).
 }
 

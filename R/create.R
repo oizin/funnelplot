@@ -97,7 +97,7 @@ check_formula <- function(x,var_names) {
 #'
 #'
 #' @section Author(s):
-#' The package is based on Spiegelhalter (2005) and Jones, Ohlssen & Spiegelhalter (2008). All errors in implementation and are the responsibility of the package authors (Oisin Fitzgerald).
+#' The package is based on Spiegelhalter (2005) and Jones, Ohlssen & Spiegelhalter (2008). All errors in implementation and are the responsibility of the package author (Oisin Fitzgerald).
 #'
 #' @section References
 #' Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. Journal of the royal statistical society. Series B (Methodological), 289-300.
@@ -171,8 +171,13 @@ funnel <- function(formula, control=pointTarget(), data) {
   # determine clinics inside/outside limits
   incontrol <- vector(mode = "list",length=length(control$limits))
   for(ii in 1:length(control$limits)) {
-    incontrol[[ii]] <- (funnelData$data$prop_adj <= upper[[ii]] &
-                          funnelData$data$prop_adj >= lower[[ii]])
+    if (control$standardised == FALSE) {
+      incontrol[[ii]] <- (funnelData$data$prop_adj <= upper[[ii]] &
+          funnelData$data$prop_adj >= lower[[ii]])
+    } else if (control$standardised == TRUE) {
+      incontrol[[ii]] <- (funnelData$data$observed_expected <= upper[[ii]] &
+          funnelData$data$observed_expected >= lower[[ii]])
+    }
   }
   incontrol <- data.frame(incontrol)
   tmp <- as.character(100*(1-(control$limits)))
@@ -210,8 +215,9 @@ funnel <- function(formula, control=pointTarget(), data) {
 #'
 #' @param limits alpha levels
 #' @param N number of tests
+#' @param ... additional args
 #'
-bonferroni <- function(limits, N) {
+bonferroni <- function(limits, N,...) {
   new_limits <- limits/N
   new_limits
 }
@@ -221,7 +227,7 @@ bonferroni <- function(limits, N) {
 #' Calculate the control limits for use in plotting and comparison of individual clusters (institutions) to a point target.
 #'
 #' @param target institution target value (a proportion)
-#' @param n precision values at which to calculate limit
+#' @param n precision values at which to calculate limit (vector)
 #' @param N number of clusters (institutions)
 #' @param inflationFactor Unexplained variation
 #' @param control description of task
@@ -242,9 +248,9 @@ pointLimits <- function(target,n,N,inflationFactor,control,pval) {
   for(ii in 1:length(control$limits)) {
     if (control$standardised == TRUE) {
       if (control$normalApprox == TRUE) {
-        # expected births
+        # expected outcome
         e0 <- n*target
-        stdErr0 <- sqrt(1/e0)
+        stdErr0 <- sqrt(1/e0 - 1/n)  # 1/n adjustment
         # distribution quantiles
         zzlower <- stats::qnorm(control$limits[ii]/2)
         zzupper <- stats::qnorm(1-(control$limits[ii]/2))
@@ -299,12 +305,20 @@ randomEffectLimits <- function(target,n,effectVar,control) {
   lower <- vector(mode = "list",length = length(control$limits))
 
   for(ii in 1:length(control$limits)) {
-    zzlower <- stats::qnorm(control$limits[ii]/2)
-    zzupper <- stats::qnorm(1-(control$limits[ii]/2))
-
-    var0 <- target*(1-target)*(1/n)
-    upper[[ii]] <- target + zzupper*sqrt(var0 + effectVar)
-    lower[[ii]] <- target + zzlower*sqrt(var0 + effectVar)
+    if (control$standardised == TRUE) {
+      zzlower <- stats::qnorm(control$limits[ii]/2)
+      zzupper <- stats::qnorm(1-(control$limits[ii]/2))
+      e0 <- n*target
+      var0 <- (1/e0 - 1/n)
+      upper[[ii]] <- 1 + zzupper*sqrt(var0 + effectVar/target^2)
+      lower[[ii]] <- 1 + zzlower*sqrt(var0 + effectVar/target^2)
+    } else if (control$standardised == FALSE) {
+      zzlower <- stats::qnorm(control$limits[ii]/2)
+      zzupper <- stats::qnorm(1-(control$limits[ii]/2))
+      var0 <- target*(1-target)*(1/n)
+      upper[[ii]] <- target + zzupper*sqrt(var0 + effectVar)
+      lower[[ii]] <- target + zzlower*sqrt(var0 + effectVar)
+    }
   }
 
   tmp <- as.character(100*(1-(control$limits)))
@@ -408,7 +422,12 @@ fdr <- function(limits,N,pval) {
   for(alpha in 1:length(limits)) {
     orderedPos <- order(pval)
     criticalPEach <- (orderedPos*limits[alpha])/N
-    criticalPAll <- max(pval[pval < criticalPEach])
+    criticalTmp <- pval[pval < criticalPEach]
+    if (length(criticalTmp) == 0) {
+      criticalPAll <- limits[alpha]
+    } else {
+      criticalPAll <- max(criticalTmp)
+    }
     out[alpha] <- criticalPAll
   }
   out
