@@ -17,6 +17,6 @@ example_data
 }
 \description{
 A synthetic dataset containing XX hospitals and XX patients. Hospitals are being compared on the variable
-test, with X1 and X1 as potential adjustment variables.
+test, with gender and age as potential adjustment variables.
 }
 \keyword{datasets}

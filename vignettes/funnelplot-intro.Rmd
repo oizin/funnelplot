@@ -37,7 +37,8 @@ We first create an unadjusted funnel plot. The resulting plot shows the raw even
 ```{r}
 # outcome ~ covariates | cluster ID
 f1 <- funnel(test ~ 1 | hosp_id, data = example_data)
-plot(f1)
+plot(f1) +
+  theme_funnel()
 ```
 
 The plot returned by funnelplot::plot is a standard ggplot2 object, allowing a large degree of customisation to fit the end use.  

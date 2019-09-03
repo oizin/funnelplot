@@ -11,10 +11,35 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Error rates for various multiplicity controls
 
+### Single analysis
+
 ```{r}
 library(funnelplot)
 library(ggplot2)
 ```
+
+```{r}
+N <- 100
+xx <- generate_example(N,100,1000,0.4)
+ff <- funnel(y~1|id,control = pointTarget(limits = 0.05),data=xx)
+ff_bonf <- funnel(y~1|id,control = pointTarget(limits = 0.05,multAdj = "bonferroni"),
+    data=xx)
+ff_fdr <- funnel(y~1|id,control = pointTarget(limits = 0.05,multAdj = "fdr"),
+    data=xx)
+
+sum(ff$results$inside95)/N
+sum(ff_bonf$results$inside95)/N
+sum(ff_fdr$results$inside95)/N
+```
+
+```{r}
+p1 <- plot(ff) + coord_cartesian(ylim = c(0.2,0.6)) + labs(title = "no multiplicity adjustment")
+p2 <- plot(ff_bonf)+coord_cartesian(ylim = c(0.2,0.6))+labs(title = "Bonferroni")
+p3 <- plot(ff_bonf)+coord_cartesian(ylim = c(0.2,0.6))+labs(title = "False discovery rate")
+gridExtra::grid.arrange(p1,p2,p3,ncol=2)
+```
+
+### Simulations
 
 ```{r}
 M <- 100

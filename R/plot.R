@@ -129,3 +129,38 @@ plot.funnelRes <- function(x,identify="all",label="none",lengthOut=500L,...) {
   pp
 }
 
+
+#' A ggtheme
+#'
+#' A minimalist ggtheme for drawing funnel plots
+#'
+#' @param base_size base font size
+#' @param base_family base font family
+#' @param base_line_size base size for line elements
+#' @param base_rect_size base size for rect elements
+#'
+#' @export
+theme_funnel <- function(base_size = 11, base_family = "",
+                     base_line_size = base_size / 22,
+                     base_rect_size = base_size / 22) {
+  # Starts with theme_grey and then modify some parts
+  ggplot2::theme_grey(
+    base_size = base_size,
+    base_family = base_family,
+    base_line_size = base_line_size,
+    base_rect_size = base_rect_size
+  ) +
+    ggplot2::theme(
+      # white background and dark border
+      panel.background = ggplot2::element_rect(fill = "white", colour = NA),
+      panel.border     = ggplot2::element_rect(fill = NA, colour = "grey20"),
+      # make gridlines dark, same contrast with white as in theme_grey
+      panel.grid = ggplot2::element_line(colour = "grey92"),
+      panel.grid.minor = ggplot2::element_line(size = ggplot2::rel(0.5)),
+      # contour strips to match panel contour
+      strip.background = ggplot2::element_rect(fill = "grey85", colour = "grey20"),
+      # match legend key to background
+      legend.key       = ggplot2::element_rect(fill = "white", colour = NA),
+      complete = TRUE
+    )
+}

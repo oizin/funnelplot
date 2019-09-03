@@ -2,8 +2,8 @@ Package: funnelplot
 Type: Package
 Title: Create Funnel Plots
 Version: 0.1.3
-Author: Oisin Fitzgerald
-Maintainer: Oisin Fitzgerald <fitzgeraldoisin@gmail.com>
+Authors@R: c(person("Oisin", "Fitzgerald", email = "fitzgeraldoisin@gmail.com",role = c("aut", "cre")),
+  person("Mark", "Hanly", role="aut"))
 Description: Funnel plots for comparison of institutional performance.
 License: MIT + file LICENSE
 Encoding: UTF-8

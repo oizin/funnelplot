@@ -3,4 +3,5 @@
 - Finish vignettes
 - Finish error rate experiments, add single analysis section
 - Check distTarget code for accuracy
-- Change use of 'prop' to either 'y' or outcome name
+- Change use of 'prop' to either 'y' or outcome name (outcome name!)
+- Update theme funnel
