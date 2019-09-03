@@ -5,3 +5,4 @@
 - Check distTarget code for accuracy
 - Change use of 'prop' to either 'y' or outcome name (outcome name!)
 - Update theme funnel
+- Check cross validation code
