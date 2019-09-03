@@ -3,7 +3,9 @@
 
 # funnelplot
 
-<!-- badges: start --> [![Travis build
+<!-- badges: start -->
+
+[![Travis build
 status](https://travis-ci.org/oizin/funnelplot.svg?branch=master)](https://travis-ci.org/oizin/funnelplot)
 [![codecov](https://codecov.io/github/oizin/funnelplot/branch/master/graphs/badge.svg)](https://codecov.io/github/oizin/funnelplot)
 <!-- badges: end -->
@@ -41,14 +43,15 @@ plot(f1) +
 
 funnelplot supports:
 
-  - Covariate risk adjustment: control for differences in the
+  - **Covariate risk adjustment**: control for differences in the
     characteristics of observations within each cluster. This is done
-    through using a statistical model to calculate \(\hat{y}_{ij}\), an
-    estimate of the expected outcome for each observation, and cluster
-    level comparison of the observed and expected outcomes.  
-  - Multiplicity adjustment: control for potentially high false positive
-    rates in the comparison of large numbers of clusters.  
-  - Overdispersion: In situations where there is large variation in
+    through using a statistical model to estimate the expected outcome
+    for each observation. This is followed by cluster level calculation
+    of a suitable comparison measure of the observed and expected
+    outcomes.  
+  - **Multiplicity adjustment**: control for potentially high false
+    positive rates in the comparison of large numbers of clusters.  
+  - **Overdispersion**: In situations where there is large variation in
     performance between the clusters, and the outcome cannot be
     reliabilty predicted, one approach to avoiding labelling a large
     number of clusters as outliers is to adjust the control limits
