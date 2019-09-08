@@ -2,7 +2,7 @@
 % Please edit documentation in R/summary.R
 \name{summary.funnelRes}
 \alias{summary.funnelRes}
-\title{summary function}
+\title{Cluster performance summary}
 \usage{
 \method{summary}{funnelRes}(object, ...)
 }
@@ -12,5 +12,5 @@
 \item{...}{other arguments to print.}
 }
 \description{
-summary function
+Summarise the results of comparing the observed performance of clusters to their expected performance
 }

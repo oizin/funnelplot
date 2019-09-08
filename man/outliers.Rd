@@ -4,11 +4,13 @@
 \alias{outliers}
 \title{List institutional outliers}
 \usage{
-outliers(funnelRes)
+outliers(funnelRes, limits = NULL)
 }
 \arguments{
 \item{funnelRes}{funnel plot object}
+
+\item{limits}{Optional argument indicating which subset of the control limits should be used for selecting outlying institutions.}
 }
 \description{
-List institutional outliers
+Return a ?type vector of all outliers
 }

@@ -39,7 +39,7 @@ library(funnelplot)
 data("example_data")
 
 # outcome ~ covariates | cluster ID
-f1 <- funnel(test ~ age + gender | hosp_id, pointTarget(limits = c(0.05,0.01)), data = example_data)
+f1 <- funnelModel(test ~ age + gender | hosp_id, pointTarget(limits = c(0.05,0.01)), data = example_data)
 plot(f1) +
   theme_funnel()
 ```

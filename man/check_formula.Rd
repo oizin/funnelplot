@@ -4,10 +4,10 @@
 \alias{check_formula}
 \title{Check the input to funnel}
 \usage{
-check_formula(x, var_names)
+check_formula(ff, var_names)
 }
 \arguments{
-\item{x}{formula for funnel}
+\item{ff}{formula for funnel}
 
 \item{var_names}{names of variables in dataset provided to funnel}
 }

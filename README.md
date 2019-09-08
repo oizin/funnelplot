@@ -34,7 +34,7 @@ library(funnelplot)
 data("example_data")
 
 # outcome ~ covariates | cluster ID
-f1 <- funnel(test ~ age + gender | hosp_id, pointTarget(limits = c(0.05,0.01)), data = example_data)
+f1 <- funnelModel(test ~ age + gender | hosp_id, pointTarget(limits = c(0.05,0.01)), data = example_data)
 plot(f1) +
   theme_funnel()
 ```
@@ -66,6 +66,7 @@ customisation:
 
 ``` r
 library(ggplot2)
+#> Warning: package 'ggplot2' was built under R version 3.5.2
 plot(f1) +
   labs(x = "Number of patients", y = "Performed test (%)", title = "Hospital performance (2018)", 
        subtitle = "Adjusted for patient age and gender") +

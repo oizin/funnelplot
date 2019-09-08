@@ -21,10 +21,10 @@ library(ggplot2)
 ```{r}
 N <- 100
 xx <- generate_example(N,100,1000,0.4)
-ff <- funnel(y~1|id,control = pointTarget(limits = 0.05),data=xx)
-ff_bonf <- funnel(y~1|id,control = pointTarget(limits = 0.05,multAdj = "bonferroni"),
+ff <- funnelModel(y~1|id,control = pointTarget(limits = 0.05),data=xx)
+ff_bonf <- funnelModel(y~1|id,control = pointTarget(limits = 0.05,multAdj = "bonferroni"),
     data=xx)
-ff_fdr <- funnel(y~1|id,control = pointTarget(limits = 0.05,multAdj = "fdr"),
+ff_fdr <- funnelModel(y~1|id,control = pointTarget(limits = 0.05,multAdj = "fdr"),
     data=xx)
 
 sum(ff$results$inside95)/N
@@ -46,7 +46,7 @@ M <- 100
 res1 <- replicate(M, {
   N <- 100
   xx <- generate_example(N,100,1000,0.4)
-  ff <- funnel(y~1|id,control = pointTarget(limits = 0.05),data=xx)
+  ff <- funnelModel(y~1|id,control = pointTarget(limits = 0.05),data=xx)
   not_outlier <- sum(ff$results$inside95)/N
 })
 summary(res1)
@@ -57,7 +57,7 @@ M <- 100
 res2 <- replicate(M, {
   N <- 100
   xx <- generate_example(N,100,1000,0.4)
-  ff <- funnel(y~1|id,control = pointTarget(limits = 0.05,standardised = TRUE),data=xx)
+  ff <- funnelModel(y~1|id,control = pointTarget(limits = 0.05,standardised = TRUE),data=xx)
   not_outlier <- sum(ff$results$inside95)/N
 })
 summary(res2)
@@ -68,7 +68,7 @@ M <- 100
 res2 <- replicate(M, {
   N <- 100
   xx <- generate_example(N,100,1000,0.4)
-  ff <- funnel(y~1|id,
+  ff <- funnelModel(y~1|id,
     control = pointTarget(limits = 0.05,multAdj = "bonferroni"),
     data=xx)
   not_outlier <- sum(ff$results$inside95)/N

@@ -3,14 +3,6 @@
 # - Create the data for a funnel plot
 #########################################################################
 
-#' Dispersion parameters
-#'
-#' Calculate the inflation parameters for situations where overdispersion is present.
-#'
-#' @param funnelData funnel plot data
-#' @param trim winsorisation
-#'
-dispersion <- function(funnelData,trim=NULL) UseMethod("dispersion")
 
 #' Dispersion parameters
 #'
@@ -19,9 +11,9 @@ dispersion <- function(funnelData,trim=NULL) UseMethod("dispersion")
 #' @param funnelData funnel plot data
 #' @param trim winsorisation
 #'
-dispersion.funnelData <- function(funnelData,trim=NULL) {
+dispersion <- function(funnelData,trim=NULL) {
 
-  #
+  # move up one level
   data <- funnelData$data
   target <- funnelData$target
 
@@ -60,18 +52,21 @@ dispersion.funnelData <- function(funnelData,trim=NULL) {
 #'
 #' Checks whether the input to the funnel function is correct.
 #'
-#' @param x formula for funnel
+#' @param ff formula for funnel
 #' @param var_names names of variables in dataset provided to funnel
 #'
-check_formula <- function(x,var_names) {
-  tmp <- as.list(x)
+check_formula <- function(ff,var_names) {
+  tmp <- as.list(ff)
   tmp <- as.character(tmp[[3]])
   vars_in_form <- trimws(unlist(strsplit(tmp[2],"+",fixed = TRUE)))
   if (all(vars_in_form != "1")) {
-    assertthat::assert_that(length(all.vars(x)) >= 3,msg = "formula must be of the form `y ~ covariates | cluster` or `y ~ 1 | cluster`")
-    assertthat::assert_that(tmp[1] == "|" & all(all.vars(x) %in% var_names),msg = "formula must be of the form y ~ covariates | cluster or y ~ 1 | cluster")
+    assertthat::assert_that(length(all.vars(ff)) >= 3,
+      msg = "formula must be of the form `y ~ covariates | cluster` or `y ~ 1 | cluster`")
+    assertthat::assert_that(tmp[1] == "|" & all(all.vars(ff) %in% var_names),
+      msg = "formula must be of the form y ~ covariates | cluster or y ~ 1 | cluster")
   } else {
-    assertthat::assert_that(tmp[1] == "|" & all(vars_in_form == "1"),msg = "formula must be of the form y ~ covariates | cluster or y ~ 1 | cluster")
+    assertthat::assert_that(tmp[1] == "|" & all(vars_in_form == "1"),
+      msg = "formula must be of the form y ~ covariates | cluster or y ~ 1 | cluster")
   }
 }
 
@@ -107,7 +102,7 @@ check_formula <- function(x,var_names) {
 #' Jones, H. E., Ohlssen, D. I., & Spiegelhalter, D. J. (2008). Use of the false discovery rate when comparing multiple health care providers. Journal of clinical epidemiology, 61(3), 232-240.
 #'
 #' @export
-funnel <- function(formula, control=pointTarget(), data) {
+funnelModel <- function(formula, control=pointTarget(), data) {
   ## checks on input args
   # prelim
   var_names <- all.vars(formula)
@@ -371,7 +366,6 @@ groupOutcomes <- function(observed,expected,id,target=NULL) {
 
   # add class
   out <- list(data = data, target = target)
-  class(out) <- c(class(out), "funnelData")
 
   # return
   out

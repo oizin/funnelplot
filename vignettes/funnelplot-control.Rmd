@@ -29,13 +29,13 @@ The control argument to `funnel` is used...
 
 ```{r}
 # outcome ~ covariates | cluster ID
-f1 <- funnel(test ~ gender  +age| hosp_id, pointTarget(), data = example_data)
+f1 <- funnelModel(test ~ gender  +age| hosp_id, pointTarget(), data = example_data)
 plot(f1)
 ```
 
 ```{r}
 # outcome ~ covariates | cluster ID
-f1s <- funnel(test ~ gender +age | hosp_id, pointTarget(standardised = TRUE), 
+f1s <- funnelModel(test ~ gender +age | hosp_id, pointTarget(standardised = TRUE), 
   data = example_data)
 plot(f1s)
 ```
@@ -44,14 +44,14 @@ plot(f1s)
 
 ```{r}
 # outcome ~ covariates | cluster ID
-f2 <- funnel(test ~ gender + age | hosp_id, distTarget(limits = c(0.01,0.05),
+f2 <- funnelModel(test ~ gender + age | hosp_id, distTarget(limits = c(0.01,0.05),
   standardised = FALSE), data = example_data)
 plot(f2)
 ```
 
 ```{r}
 # outcome ~ covariates | cluster ID
-f2s <- funnel(test ~ gender + age | hosp_id, distTarget(limits = c(0.01,0.05),
+f2s <- funnelModel(test ~ gender + age | hosp_id, distTarget(limits = c(0.01,0.05),
   standardised = TRUE), data = example_data)
 plot(f2s)
 ```

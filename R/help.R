@@ -7,27 +7,19 @@
 #'
 #' Edit formula passed to funnel to enable call to stats::glm
 #'
-#' @param formula formula passed to funnel.
+#' @param ff formula passed to funnel.
 #'
-getFunnelFormula <- function(formula) {
-  tmp <- as.list(formula)
-  tmp <- gsub(" "," ",tmp[[3]])[2]
-  vars <- all.vars(formula)
+getFunnelFormula <- function(ff) {
+  # formula without cluster term
+  ff <- Formula::Formula(ff)
+  newff <- stats::formula(ff,lhs=1,rhs=1)
+  # null formula (no covariates)
+  vars <- all.vars(ff)
   p <- length(vars)
-  nullForm <- paste(vars[1],"1",sep = "~")
-  if(p > 2) {
-    covar <- paste0(vars[2:(p-1)],collapse = "+")
-    newForm <- paste(vars[1],tmp,sep = "~")
-  } else {
-    newForm <- nullForm
-  }
-  list(newForm = stats::as.formula(newForm),
-       nullForm = stats::as.formula(nullForm),
-       outcome = vars[1],
-       id = vars[p])
+  nullff <- stats::as.formula(paste(vars[1],"1",sep = "~"))
+  # return
+  list(newForm = newff,
+     nullForm = nullff,
+     outcome = vars[1],
+     id = vars[p])
 }
-
-
-getFunnelFormula(y~1+2|unit)
-
-formula = y~1+2|unit
