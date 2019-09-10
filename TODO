@@ -1,9 +1,6 @@
-- Create a summary method that returns #outliers,hyperparameters
 - Finish vignettes
 - Finish error rate experiments, add single analysis section
 - Check distTarget code for accuracy
-- Change use of 'prop' to either 'y' or outcome name (outcome name!): at final step or throughout?
-- Update theme funnel to be unique!
-- Check cross validation code
+- Change use of 'prop' to either 'y' or outcome name (outcome name!): at final step or throughout? prob final
 - add tests for summary and outliers
 - finish outliers function

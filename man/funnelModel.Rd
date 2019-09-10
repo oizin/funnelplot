@@ -4,7 +4,7 @@
 \alias{funnelModel}
 \title{Table of results for risk adjusted funnel plots.}
 \usage{
-funnelModel(formula, control = pointTarget(), data)
+funnelModel(formula, control = pointTarget(), adj = adjParams(), data)
 }
 \arguments{
 \item{formula}{a two-sided formula. Either of the form y ~ x1 + x2 | group,
@@ -12,6 +12,9 @@ or if no covariates use y ~ 1 | group}
 
 \item{control}{a description of how the funnel plot target and control limits should be constructed. See the control functions
 pointTarget() and distTarget().}
+
+\item{adj}{a description of the algorithm that will be used in calculating the expected outcome for each observation for the purpose of casemix adjustment.
+See adjModel() for more details.}
 
 \item{data}{a data frame containing the variables named in formula}
 }

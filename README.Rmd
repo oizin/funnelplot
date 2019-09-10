@@ -46,8 +46,9 @@ plot(f1) +
 
 funnelplot supports:  
 
+* __Binary outcomes__: situations in which the outcome can be conceptualised as a Bernoulli trial with outcomes 0 "failure" and 1 "success".  
 * __Covariate risk adjustment__: control for differences in the characteristics of observations within each cluster. This is done through using a statistical model to estimate the expected outcome for each observation. This is followed by cluster level calculation of a suitable comparison measure of the observed and expected outcomes.  
-* __Multiplicity adjustment__: control for potentially high false positive rates in the comparison of large numbers of clusters.   
+* __Multiplicity adjustment__: control for potentially high false positive rates in the comparison of large numbers of clusters using _Bonferroni_ or _false discovery rate_ (FDR) based corrections.
 * __Overdispersion__: In situations where there is large variation in performance between the clusters, and the outcome cannot be reliabilty predicted, one approach to avoiding labelling a large number of clusters as outliers is to adjust the control limits outward by an _inflation factor_ (e.g. 20%). The _inflation factor_  can be estimated using the data, with the ability to leave a certain percentage of the best and worst performing clusters left out of the calculation.
   
 All objects returned by `funnelplot::plot()` are [ggplot2](https://ggplot2.tidyverse.org/) objects enabling further customisation:
@@ -59,7 +60,9 @@ plot(f1) +
        subtitle = "Adjusted for patient age and gender") +
   scale_y_continuous(breaks = seq(0.2,0.6,0.2),labels = 100*seq(0.2,0.6,0.2)) +
   scale_color_discrete(name = "Control limit", labels = c(0.95,0.99)) +
-  theme_grey()
+  theme(panel.background = element_rect(fill = "gray96",
+                                colour = "white",
+                                size = 0.5, linetype = "solid"))
 ```
 
 See the vignettes:

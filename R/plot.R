@@ -152,14 +152,7 @@ theme_funnel <- function(base_size = 11, base_family = "",
   ) +
     ggplot2::theme(
       # white background and dark border
-      panel.background = ggplot2::element_rect(fill = "white", colour = NA),
-      panel.border     = ggplot2::element_rect(fill = NA, colour = "grey20"),
-      # make gridlines dark, same contrast with white as in theme_grey
-      panel.grid = ggplot2::element_line(colour = "grey92"),
-      panel.grid.minor = ggplot2::element_line(size = ggplot2::rel(0.5)),
-      # contour strips to match panel contour
-      strip.background = ggplot2::element_rect(fill = "grey85", colour = "grey20"),
-      # match legend key to background
+      panel.background = ggplot2::element_rect(fill = "gray96", colour = NA),
       legend.key       = ggplot2::element_rect(fill = "white", colour = NA),
       complete = TRUE
     )

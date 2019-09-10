@@ -3,6 +3,7 @@
 S3method(plot,funnelRes)
 S3method(print,funnelRes)
 S3method(summary,funnelRes)
+export(adjParams)
 export(distTarget)
 export(eg_sample_func)
 export(evalCasemixAdj)

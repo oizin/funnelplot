@@ -48,6 +48,78 @@ dispersion <- function(funnelData,trim=NULL) {
     effectVar = effectVar)
 }
 
+
+#' Casemix adjustment
+#'
+#' @param ff model formula in the form outcome ~ covariates
+#' @param data dataset
+#' @param params adjParams
+#'
+calcExpected <- function(ff,data,params) {
+
+  if (params$method == "use_all") {
+    adjMod <- eval(params$model, list(data = data,ff = ff))
+    expected <- stats::predict(adjMod,newdata=data,type="response")
+    evaluation <- NA
+  } else if (params$method == "out_of_fold") {
+    # make folds
+    N <- nrow(data)
+    per_samp <- floor(N/params$nfolds)
+    samp_i <- 1:N
+    avail <- rep(TRUE,length(samp_i))
+    make_folds <- function(x) {
+      out <- sample(x[avail],size = per_samp,replace=FALSE)
+      avail[out] <<- FALSE
+      out
+    }
+    cv_leave_out_i <- replicate(n = params$nfolds, make_folds(samp_i))
+
+    # make folds
+    cv_folds <- vector(mode = "list", length = params$nfolds)
+    for(leave_out in 1:ncol(cv_leave_out_i)) {
+      train_i <- as.numeric(cv_leave_out_i[,-leave_out])
+      test_i <- as.numeric(cv_leave_out_i[,leave_out])
+      cv_folds[[leave_out]] <- list(train = train_i, test = test_i)
+    }
+
+    # evaluate fold times (cols = folds)
+    brier <- numeric(length(cv_folds))
+    accuracy <- numeric(length(cv_folds))
+    auc_roc <- numeric(length(cv_folds))
+
+    expected <- c()
+    test_index <- c()
+    outcomeVar <- all.vars(ff)[1]
+
+    for(fold in 1:length(cv_folds)) {
+      # fit model
+      adj_mod_i <- eval(params$model, list(data = data[cv_folds[[fold]]$train,],ff = ff))
+
+      # predictions
+      test_index <- c(test_index,cv_folds[[fold]]$test)
+      expected_i <- stats::predict(adj_mod_i, data[cv_folds[[fold]]$test,],type="response")
+      expected <- c(expected,expected_i)
+
+      # evaluation metrics
+      binary_pred_i <- classify(expected_i,cutoff = 0.5)
+      true_out_i <- data[cv_folds[[fold]]$test,outcomeVar]
+      brier[fold] <- mean((expected_i - true_out_i)^2)
+      accuracy[fold] <- accuracy(binary_pred_i,true_out_i)
+      auc_roc[fold] <- auc_roc(expected_i,true_out_i)
+    }
+    expected <- expected[order(test_index)]
+    outcome <- data[[outcomeVar]]
+    no_info_rate <- max(mean(outcome),1-mean(outcome))
+    evaluation <- data.frame(run = c(1:params$nfolds,"overall"),
+               brier = c(brier,mean(brier)),
+               accuracy = c(accuracy,mean(accuracy)),
+               auc_roc = c(auc_roc,mean(auc_roc)),
+               no_info_rate = c(rep(NA,params$nfolds),no_info_rate))
+  }
+  list(expected=expected,evaluation=evaluation)
+}
+
+
 #' Check the input to funnel
 #'
 #' Checks whether the input to the funnel function is correct.
@@ -79,6 +151,8 @@ check_formula <- function(ff,var_names) {
 #' @param data a data frame containing the variables named in formula
 #' @param control a description of how the funnel plot target and control limits should be constructed. See the control functions
 #' pointTarget() and distTarget().
+#' @param adj a description of the algorithm that will be used in calculating the expected outcome for each observation for the purpose of casemix adjustment.
+#' See adjModel() for more details.
 #'
 #' @return funnel returns an object of class "funnelRes". The functions \code{outliers} and \{plot} are used to obtain a summary of the
 #' outlying clusters (institutions) and produce a funnel plot.\cr
@@ -102,7 +176,7 @@ check_formula <- function(ff,var_names) {
 #' Jones, H. E., Ohlssen, D. I., & Spiegelhalter, D. J. (2008). Use of the false discovery rate when comparing multiple health care providers. Journal of clinical epidemiology, 61(3), 232-240.
 #'
 #' @export
-funnelModel <- function(formula, control=pointTarget(), data) {
+funnelModel <- function(formula, control=pointTarget(), adj=adjParams(), data) {
   ## checks on input args
   # prelim
   var_names <- all.vars(formula)
@@ -120,8 +194,8 @@ funnelModel <- function(formula, control=pointTarget(), data) {
   newFormula <- sepFormula$newForm
 
   ## casemix adjustment
-  adjMod <- stats::glm(newFormula,family=stats::binomial(link="logit"),data=data)
-  expected <- stats::fitted(adjMod)
+  model_res <- calcExpected(newFormula,data,adj)
+  expected <- model_res$expected
   observed <- data[[outcomeVar]]
   id <- as.factor(data[[idVar]])
 
@@ -193,8 +267,8 @@ funnelModel <- function(formula, control=pointTarget(), data) {
               dispersion = dispRes,
               ctrlLimits = ctrlLimits,
               target = funnelData$target,
-              data = data
-              #adj_model = adj_mod,
+              data = data,
+              adj_model_perf = model_res$evaluation
               #casemix_adj = casemix_adj,
               #outcome = outcome
   )
