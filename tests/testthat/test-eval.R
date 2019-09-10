@@ -19,7 +19,6 @@ res2 <- evalCasemixAdj(f2,folds = 2)
 test_that("Check evalCasemixAdj returns values indicating noise", {
   expect_equal(res2$brier[nfolds+1],0.25,tolerance = 0.05)
   expect_equal(res2$accuracy[nfolds+1],0.5,tolerance = 0.05)
-  expect_equal(res2$pseudoR2[nfolds+1],0.0,tolerance = 0.05)
   expect_equal(res2$auc_roc[nfolds+1],0.5,tolerance = 0.05)
   expect_equal(res2$no_info_rate[nfolds+1],0.5,tolerance = 0.05)
 })

@@ -16,14 +16,23 @@ knitr::opts_chunk$set(
 )
 ```
 
-Funnel plots are designed for comparisons of institutional performance (e.g. hospital mortality rates or store sales), for the purpose of outlier discovery. They graph institution performance y (on a metric of interest) against institution size n. Control limits are then overlayed, designed to capture (1-$\alpha$)100% of institutions (typically 95% and 99.7% - 2 and 3 standard deviations), from a target value (e.g. the global average) for the metric. The "funnel" shape comes from the expectation that with increasing institution size there will be less variation around the target, leading to narrower control limits as n grows. For an excellent introduction see Spiegelhalter (2005).
+Funnel plots are designed for comparisons of institutional performance, for the purpose of outlier discovery. These may be over or under performers. They graph institution performance **y** (on a metric of interest, e.g. hospital mortality) against a measure of institution size **n** (e.g. number of patients treated). Control limits are then overlayed, designed to capture (1-$\alpha$)100% of institutions (typically 95% and 99.7% - 2 and 3 standard deviations), from a target value (e.g. the global average) for the metric. The "funnel" shape comes from the expectation that with increasing institution size there will be less variation around the target, leading to narrower control limits as **n** grows. For an excellent introduction see Spiegelhalter (2005).
 
 ```{r setup}
 library(funnelplot)
 library(ggplot2)
 ```
 
-To illustrate the funnelplot package, we will use a synthetic example dataset of 40 hospitals. The binary outcome measure is whether a particular procedure was successful on the ith patient. We have two variables gender and age that may be distributed unevenly across the hospitals and play a role in explaining differences in the observed hospital success rate y = sum test / n.
+funnelplot supports:  
+
+* __Binary outcomes__: situations in which the outcome can be conceptualised as a Bernoulli trial with outcomes 0 "failure" and 1 "success".  
+* __Covariate risk adjustment__: control for differences in the characteristics of observations within each cluster. This is done through using a statistical model to estimate the expected outcome for each observation. This is followed by cluster level calculation of a suitable comparison measure of the observed and expected outcomes.  
+* __Multiplicity adjustment__: control for potentially high false positive rates in the comparison of large numbers of clusters using _Bonferroni_ or _false discovery rate_ (FDR) based corrections.
+* __Overdispersion__: In situations where there is large variation in performance between the clusters, and the outcome cannot be reliabilty predicted, one approach to avoiding labelling a large number of clusters as outliers is to adjust the control limits outward by an _inflation factor_ (e.g. 20%). The _inflation factor_  can be estimated using the data, with the ability to leave a certain percentage of the best and worst performing clusters left out of the calculation.
+
+### An example
+
+To illustrate the funnelplot package, we will use a synthetic example dataset of 40 hospitals. The binary outcome measure is whether a particular procedure was successful on the **i**th patient. We have two variables gender and age that may be distributed unevenly across the hospitals and play a role in explaining differences in the observed hospital procedure rate.
 
 ```{r}
 data("example_data", package = "funnelplot")
@@ -50,7 +59,13 @@ pp +
   theme_bw()
 ```
 
-funnelplot contains other useful functions such as `outliers` that returns ... and a `summary` method that ....
+funnelplot contains other useful functions such as a `summary` method (i.e. `summary.funnelRes`) which can be used to print information about the outlying clusters, and any risk-adjustment model (see below).
+
+```{r}
+summary(f1)
+```
+
+and `outliers`, which returns a vector of the resulting outliers for use in further analyses.
 
 ```{r}
 outliers(f1)
@@ -58,19 +73,25 @@ outliers(f1)
 
 ### Risk adjustment 
 
-Generally raw comparison of event rates between institutions runs the risk of failing to account for differences in the populations between each cluster (e.g. a tendency for sicker patients to attend a particular hospital). To account for this a statistical model can be used to estimated hat{y} for each observation in the data - the predicted outcome given the observed covariates - which can be compared to the observed outcome y to obtain standardised rates per institution. Currently funnelplot uses logistic regression `stats::glm` for risk adjustment. A standard R formula of the form `outcome ~ covariates | clusterID` creates a risk adjusted funnel plot object. 
+Generally raw comparison of event rates between institutions runs the risk of failing to account for differences in the subpopulations within each cluster (e.g. a tendency for sicker patients to attend a particular hospital). To account for this a statistical model can be used to estimate the expected outcome for each observation in the data, allowing comparison to the observed outcome to obtain standardised rates per institution. Currently funnelplot uses logistic regression `stats::glm` for risk adjustment. A standard R formula of the form `outcome ~ covariates | clusterID` creates a risk adjusted funnel plot object. 
 
 ```{r}
 f2 <- funnelModel(test ~ gender | hosp_id, data = example_data)
 plot(f2)
 ```
 
-### Adjusting for multiplicity and overdispersion
-
-funnelplot can ... through the `pointTarget` function, that is passed to the control argument. Using `pointTarget` we can also pass an arbitrary number of control limits to funnel. In comparison to the above plots we now see that ... 
+Concern of inadequate risk adjustment can be evaluated using `evalCasemixAdj` which uses cross-validation to test the predictive ability of the model. A combination of a poorly predictive model and a large degree of over-dispersion indicates a need to think carefully about any inferences drawn from the funnel plot.
 
 ```{r}
-f3 <- funnelModel(test ~ gender | hosp_id, data = example_data)
+evalCasemixAdj(f2,method="cv",folds = 5)
+```
+
+### Adjusting for multiplicity and overdispersion
+
+The funnelplot hyperparameters - multiplicity adjustment and overdispersion - can be controlled through the control argument of `funnelModel`. This takes either the `pointTarget` or `distTarget` task functions, with the names indicating whether the institutions are compared to a target that is a single value (`pointTarget`) or to a distribution (`distTarget`). More details on the difference are found in `vignette(funnelplot-control)` with `pointTarget` usually a good first approach.
+
+```{r}
+f3 <- funnelModel(test ~ gender | hosp_id, pointTarget(limits = c(0.05,0.01)), data = example_data)
 plot(f3)
 ```
 
@@ -79,9 +100,20 @@ plot(f3)
 By default funnelplot produces risk adjusted rates, but in many circumstances standardised rates (of the form observed/expected) will be of more interest.
 
 ```{r}
-f4 <- funnelModel(test ~ gender | hosp_id, data = example_data)
+f4 <- funnelModel(test ~ gender | hosp_id, pointTarget(limits = c(0.05,0.01), standardised = TRUE), data = example_data)
 plot(f4)
 ```
+
+### Altering the model
+
+Out of fold
+
+```{r}
+f5 <- funnelModel(test ~ gender | hosp_id, pointTarget(limits = c(0.05,0.01), standardised = TRUE), adj = adjParams(method = "out_of_fold",nfolds = 5), 
+                  data = example_data)
+plot(f5)
+```
+
 
 ### Plotting
 
@@ -90,6 +122,7 @@ Using the label and identify arguments we can label or plot only a selection of 
 ```{r}
 plot(f4,label="outliers")
 ```
+
 
 ```{r}
 plot(f4,identify=13,label=13)

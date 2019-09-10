@@ -58,3 +58,30 @@ check_distTarget <- function(x) {
   assertthat::assert_that(all(x$limits > 0.0) & all(x$limits < 0.5))
   assertthat::assert_that(x$trim >= 0.0 & x$trim < 0.5)
 }
+
+function(ff,data) stats::glm(ff,data=data,family=stats::binomial(link="logit"))
+
+#' Casemix adjustment
+#'
+#' Parameters controlling the casemix adjustment model
+#'
+#' @param model default is logistic regression
+#' @param method One of "use_all" or "out_of_fold". Default is "use_all".
+#' @param nfolds If method is "out_of_fold" how many folds? Default is 5.
+#'
+#' @export
+adjParams <- function(model="logistic",method="use_all",nfolds=5L) {
+
+  if (is.character(model)) {
+    assertthat::assert_that(model %in% c("logistic"))
+    model <- switch(model,
+           "logistic" = quote(stats::glm(ff,data=data,family=stats::binomial(link="logit"))))
+
+  } else if(is.function(model)) {
+    assertthat::has_args(model,c("ff","data"))
+    model <- quote(model)
+  }
+
+  out <- list(model=model,method=method,nfolds=nfolds)
+  out
+}

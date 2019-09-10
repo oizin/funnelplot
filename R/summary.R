@@ -9,9 +9,14 @@
 outliers <- function(funnelRes,limits=NULL) {
   ctrl_names <- grep("inside",names(funnelRes$results),value=TRUE)
   print_names <- sub("inside_","",ctrl_names)
-  nctrl <- length(funnelRes$control$limits)
-  outlierIndex <- (rowSums(funnelRes$results[,ctrl_names,drop=FALSE]) < nctrl)
-  funnelRes$results[outlierIndex,"id"]
+  if (is.null(limits)) {
+    nctrl <- length(funnelRes$control$limits)
+    outlierIndex <- (rowSums(funnelRes$results[,ctrl_names,drop=FALSE]) < nctrl)
+    funnelRes$results[outlierIndex,"id"]
+  } else {
+    grepl(1-limits)
+
+  }
 }
 
 #' print function
@@ -31,7 +36,8 @@ print.funnelRes <- function(x,...) {
   cat("\n")
 
   cat("Model:\n")
-  cat(tmp$model,"\n")
+  cat("variables:",tmp$model[[1]],"\n\n")
+  print(tmp$model[[2]])
 
 }
 
@@ -65,9 +71,11 @@ summary.funnelRes <- function(object,...) {
   f_vars <- all.vars(object$formula)
   p <- length(f_vars)
   if(p > 2) {
-    out[[3]] <- f_vars[-c(1,p)]
+    out[[3]]$vars <- f_vars[-c(1,p)]
+    out[[3]]$perf <- object$adj_model_perf
   } else {
-    out[[3]] <- NA
+    out[[3]]$vars <- NA
+    out[[3]]$perf <- object$adj_model_perf
   }
 
   names(out) <- c("n","outliers","model")

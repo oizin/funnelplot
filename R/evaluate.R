@@ -27,7 +27,6 @@ evalCasemixAdj <- function(funnelRes,method="cv",folds=5L) {
   idVar <- sepFormula$id
   outcomeVar <- sepFormula$outcome
   newFormula <- sepFormula$newForm
-  nullFormula <- sepFormula$nullForm
 
   # note dependency to above
   N <- nrow(funnelRes$data)
@@ -55,14 +54,9 @@ evalCasemixAdj <- function(funnelRes,method="cv",folds=5L) {
     # evaluate fold times (cols = folds)
     brier <- numeric(length(cv_folds))
     accuracy <- numeric(length(cv_folds))
-    pseudoR2 <- numeric(length(cv_folds))
     auc_roc <- numeric(length(cv_folds))
 
     for(fold in 1:length(cv_folds)) {
-      # fit null model
-      null_mod_i <- stats::glm(nullFormula,
-                        data = funnelRes$data[cv_folds[[fold]]$train,],
-                        family=stats::binomial(link="logit"))
       # fit model
       adj_mod_i <- stats::glm(newFormula,
                        data = funnelRes$data[cv_folds[[fold]]$train,],
@@ -74,7 +68,6 @@ evalCasemixAdj <- function(funnelRes,method="cv",folds=5L) {
       # evaluation metrics
       brier[fold] <- mean((predict_out - true_out)^2)
       accuracy[fold] <- accuracy(binary_pred,true_out)
-      pseudoR2[fold] <- 1-(stats::logLik(adj_mod_i)/stats::logLik(null_mod_i))
       auc_roc[fold] <- auc_roc(predict_out,true_out)
     }
   }
@@ -87,7 +80,6 @@ evalCasemixAdj <- function(funnelRes,method="cv",folds=5L) {
   data.frame(run = c(1:folds,"overall"),
              brier = c(brier,mean(brier)),
              accuracy = c(accuracy,mean(accuracy)),
-             pseudoR2 = c(pseudoR2,mean(pseudoR2)),
              auc_roc = c(auc_roc,mean(auc_roc)),
              no_info_rate = c(rep(NA,folds),no_info_rate))
 }
