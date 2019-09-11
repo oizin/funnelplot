@@ -1,0 +1,65 @@
+---
+title: "funnelplot-model"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{funnelplot-model}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Using XGBoost in funnelplot
+
+```{r setup}
+library(funnelplot)
+library(xgboost)
+```
+
+```{r}
+data(example_data,package="funnelplot")
+head(example_data)
+```
+
+The default is logisitic regression:
+
+```{r}
+flr <- funnelModel(test ~ gender + age | hosp_id, pointTarget(limits = c(0.05,0.01), standardised = TRUE), 
+                  adj = adjParams(model = "logistic",method = "out_of_fold",nfolds = 5), 
+                  data = example_data)
+plot(flr)
+```
+
+By defining some functions we can use xgboost:
+
+```{r}
+xg_fit <- function(formula,data) {
+  xx <- model.matrix(formula,data=data)[,-1]  # remove intercept
+  y <- data[[all.vars(formula)[1]]]
+  out <- xgboost(data = xx, label = y, max.depth = 2, eta = 1, nthread = 2, nrounds = 2, objective = "binary:logistic")
+  class(out) <- c("xg_fit",class(out))
+  out
+}
+
+# this next step is only required due to the formula only interface currenty in use
+predict.xg_fit <- function(object,newdata,formula,...) {
+  xx <- model.matrix(formula,data=newdata)[,-1]  # remove intercept
+  class(object) <- class(object)[-1]
+  predict(object,xx)
+}
+```
+
+
+```{r}
+fxg <- funnelModel(test ~ gender + age | hosp_id, pointTarget(limits = c(0.05,0.01), standardised = TRUE), 
+                  adj = adjParams(model = xg_fit,method = "out_of_fold",nfolds = 5), 
+                  data = example_data)
+plot(fxg)
+```
+
+

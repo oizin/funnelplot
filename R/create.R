@@ -51,14 +51,14 @@ dispersion <- function(funnelData,trim=NULL) {
 
 #' Casemix adjustment
 #'
-#' @param ff model formula in the form outcome ~ covariates
+#' @param formula model formula in the form outcome ~ covariates
 #' @param data dataset
 #' @param params adjParams
 #'
-calcExpected <- function(ff,data,params) {
+calcExpected <- function(formula,data,params) {
 
   if (params$method == "use_all") {
-    adjMod <- eval(params$model, list(data = data,ff = ff))
+    adjMod <- do.call(params$model, list(data = data,formula = formula))
     expected <- stats::predict(adjMod,newdata=data,type="response")
     evaluation <- NA
   } else if (params$method == "out_of_fold") {
@@ -89,15 +89,15 @@ calcExpected <- function(ff,data,params) {
 
     expected <- c()
     test_index <- c()
-    outcomeVar <- all.vars(ff)[1]
+    outcomeVar <- all.vars(formula)[1]
 
     for(fold in 1:length(cv_folds)) {
       # fit model
-      adj_mod_i <- eval(params$model, list(data = data[cv_folds[[fold]]$train,],ff = ff))
+      adj_mod_i <- do.call(params$model, list(data = data[cv_folds[[fold]]$train,],formula = formula))
 
       # predictions
       test_index <- c(test_index,cv_folds[[fold]]$test)
-      expected_i <- stats::predict(adj_mod_i, data[cv_folds[[fold]]$test,],type="response")
+      expected_i <- stats::predict(adj_mod_i,newdata=data[cv_folds[[fold]]$test,],type="response",formula=formula)
       expected <- c(expected,expected_i)
 
       # evaluation metrics
@@ -124,17 +124,17 @@ calcExpected <- function(ff,data,params) {
 #'
 #' Checks whether the input to the funnel function is correct.
 #'
-#' @param ff formula for funnel
+#' @param formula formula for funnel
 #' @param var_names names of variables in dataset provided to funnel
 #'
-check_formula <- function(ff,var_names) {
-  tmp <- as.list(ff)
+check_formula <- function(formula,var_names) {
+  tmp <- as.list(formula)
   tmp <- as.character(tmp[[3]])
   vars_in_form <- trimws(unlist(strsplit(tmp[2],"+",fixed = TRUE)))
   if (all(vars_in_form != "1")) {
-    assertthat::assert_that(length(all.vars(ff)) >= 3,
+    assertthat::assert_that(length(all.vars(formula)) >= 3,
       msg = "formula must be of the form `y ~ covariates | cluster` or `y ~ 1 | cluster`")
-    assertthat::assert_that(tmp[1] == "|" & all(all.vars(ff) %in% var_names),
+    assertthat::assert_that(tmp[1] == "|" & all(all.vars(formula) %in% var_names),
       msg = "formula must be of the form y ~ covariates | cluster or y ~ 1 | cluster")
   } else {
     assertthat::assert_that(tmp[1] == "|" & all(vars_in_form == "1"),

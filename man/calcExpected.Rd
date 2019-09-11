@@ -4,10 +4,10 @@
 \alias{calcExpected}
 \title{Casemix adjustment}
 \usage{
-calcExpected(ff, data, params)
+calcExpected(formula, data, params)
 }
 \arguments{
-\item{ff}{model formula in the form outcome ~ covariates}
+\item{formula}{model formula in the form outcome ~ covariates}
 
 \item{data}{dataset}
 

@@ -4,3 +4,4 @@
 - Change use of 'prop' to either 'y' or outcome name (outcome name!): at final step or throughout? prob final
 - add tests for summary and outliers
 - finish outliers function
+- what happens if you go y ~ . | unit   ?

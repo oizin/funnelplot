@@ -4,10 +4,10 @@
 \alias{getFunnelFormula}
 \title{Edit funnel plot formula}
 \usage{
-getFunnelFormula(ff)
+getFunnelFormula(formula)
 }
 \arguments{
-\item{ff}{formula passed to funnel.}
+\item{formula}{formula passed to funnel.}
 }
 \description{
 Edit formula passed to funnel to enable call to stats::glm
