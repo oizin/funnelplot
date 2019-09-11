@@ -5,3 +5,4 @@
 - add tests for summary and outliers
 - finish outliers function
 - what happens if you go y ~ . | unit   ?
+- allow passing of parameters to risk adjusting models
