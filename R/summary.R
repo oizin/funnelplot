@@ -32,12 +32,12 @@ print.funnelRes <- function(x,...) {
   cat(tmp$n,"\n\n")
 
   cat("Summary of outliers:\n")
-  print(tmp$outliers,row.names = FALSE)
+  print(tmp$outliers,row.names = FALSE,...)
   cat("\n")
 
   cat("Model:\n")
   cat("variables:",tmp$model[[1]],"\n\n")
-  print(tmp$model[[2]])
+  print(tmp$model[[2]],...)
 
 }
 
