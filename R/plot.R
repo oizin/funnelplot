@@ -95,7 +95,7 @@ plot.funnelRes <- function(x,identify="all",label="none",lengthOut=500L,...) {
     outlierRows <- rowSums(!x$results[outlierVars,drop=FALSE])
     x$results <- x$results[outlierRows,]
   } else if(identify[1] != "all") {
-    stopifnot(identify %in% x$results$id)
+    stopifnot(any(identify %in% x$results$id))
     x$results <- x$results[x$results$id %in% identify,]
   }
   # what to plot
