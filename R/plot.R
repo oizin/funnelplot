@@ -75,8 +75,8 @@ plotLimits <- function(funnelRes,lengthOut) {
 plot.funnelRes <- function(x,identify="all",label="none",lengthOut=500L,...) {
   ## checks on input args
   assertthat::assert_that(all(class(x) %in% c("list","funnelRes")))
-  assertthat::assert_that(identify %in% c("all","outliers",x$results$id))
-  assertthat::assert_that(label %in% c("outliers","none",x$results$id))
+  assertthat::assert_that(any(identify %in% c("all","outliers",x$results$id)))
+  assertthat::assert_that(any(label %in% c("outliers","none",x$results$id)))
   assertthat::assert_that(is.integer(lengthOut))
   assertthat::assert_that(lengthOut > 0)
   assertthat::assert_that(length(unique(x$results$n)) > 1)
