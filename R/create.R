@@ -59,7 +59,7 @@ calcExpected <- function(formula,data,params) {
 
   if (params$method == "use_all") {
     adjMod <- do.call(params$model, list(data = data,formula = formula))
-    expected <- stats::predict(adjMod,newdata=data,type="response")
+    expected <- predict(adjMod,newdata=data,type="response")
     evaluation <- NA
   } else if (params$method == "out_of_fold") {
     # make folds
@@ -97,7 +97,7 @@ calcExpected <- function(formula,data,params) {
 
       # predictions
       test_index <- c(test_index,cv_folds[[fold]]$test)
-      expected_i <- stats::predict(adj_mod_i,newdata=data[cv_folds[[fold]]$test,],type="response",formula=formula)
+      expected_i <- predict(adj_mod_i,newdata=data[cv_folds[[fold]]$test,],type="response",formula=formula)
       expected <- c(expected,expected_i)
 
       # evaluation metrics

@@ -45,7 +45,7 @@ sample_means <- function(N,mean,sd) {
 #' @param sd standard deviation of cluster (institution) mean distribution
 #' @param sample_func function to sample jth cluster (institution) size in a form other than Unif(n_min,n_max)
 #'
-#' @section Note
+#' @section Note:
 #' Current implementation is for test pruposes and may change substantially.
 #'
 #' @export

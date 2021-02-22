@@ -22,3 +22,8 @@ generate_example(N, n_min, n_max, mean, sd = 0, sample_func = NULL)
 \description{
 Simulate data for a funnel plot
 }
+\section{Note}{
+
+Current implementation is for test pruposes and may change substantially.
+}
+

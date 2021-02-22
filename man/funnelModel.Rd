@@ -18,6 +18,9 @@ See adjModel() for more details.}
 
 \item{data}{a data frame containing the variables named in formula}
 }
+\value{
+
+}
 \description{
 Perform risk adjusted cluster (institution) comparison for the purpose of outlier discovery.
 }

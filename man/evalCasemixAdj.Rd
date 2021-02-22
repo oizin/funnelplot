@@ -16,3 +16,8 @@ evalCasemixAdj(funnelRes, method = "cv", folds = 5L)
 \description{
 Evaluate ability of casemix adjustment variables to predict outcome
 }
+\section{Note}{
+
+Current implementation is for test purposes and may change substantially.
+}
+

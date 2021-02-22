@@ -4,8 +4,14 @@
 \alias{pointTarget}
 \title{Target is a point}
 \usage{
-pointTarget(limits = 0.05, normalApprox = TRUE, crtlOverDisp = FALSE,
-  trim = 0, multAdj = "none", standardised = FALSE)
+pointTarget(
+  limits = 0.05,
+  normalApprox = TRUE,
+  crtlOverDisp = FALSE,
+  trim = 0,
+  multAdj = "none",
+  standardised = FALSE
+)
 }
 \arguments{
 \item{limits}{a numeric vector containing the (1-limit)100\% values for the control limits.}

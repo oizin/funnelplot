@@ -26,7 +26,7 @@ data(example_data,package="funnelplot")
 head(example_data)
 ```
 
-The default is logisitic regression:
+The default is logistic regression:
 
 ```{r}
 flr <- funnelModel(test ~ gender + age | hosp_id, pointTarget(limits = c(0.05,0.01), standardised = TRUE), 
@@ -46,7 +46,7 @@ xg_fit <- function(formula,data) {
   out
 }
 
-# this next step is only required due to the formula only interface currenty in use
+# this next step is only required due to the formula-only interface currently in use
 predict.xg_fit <- function(object,newdata,formula,...) {
   xx <- model.matrix(formula,data=newdata)[,-1]  # remove intercept
   class(object) <- class(object)[-1]

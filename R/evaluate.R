@@ -10,7 +10,7 @@
 #' @param method "cv" for cross-validation
 #' @param folds an integer (>= 2) indicating the number of cross validation folds
 #'
-#' @section Note
+#' @section Note:
 #' Current implementation is for test purposes and may change substantially.
 #'
 #' @export

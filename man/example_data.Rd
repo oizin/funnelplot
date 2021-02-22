@@ -4,14 +4,16 @@
 \name{example_data}
 \alias{example_data}
 \title{Example dataset for the funnelplot pacakge}
-\format{A data frame with 20445 rows and 7 variables:
+\format{
+A data frame with 20445 rows and 7 variables:
 \describe{
   \item{hosp_id}{cluster ID}
   \item{patient_id}{observation ID}
   \item{gender}{patient gender (0:male, 1:female)}
   \item{age}{age of patient (standardised)}
   \item{test}{outcome variable: whether a procedure was successful}
-}}
+}
+}
 \usage{
 example_data
 }
